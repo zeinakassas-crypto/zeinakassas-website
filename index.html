@@ -181,7 +181,7 @@
   .packages .eyebrow{display:block;margin-bottom:22px;}
   .packages h2{font-size:clamp(32px,3.8vw,46px);}
 
-  .price-toggle{display:flex;justify-content:center;gap:0;margin-bottom:22px;}
+  .price-toggle{display:flex;justify-content:center;gap:0;margin-bottom:56px;}
   .price-toggle .t-btn{
     font-family:var(--sans);font-size:12.5px;letter-spacing:0.04em;font-weight:500;
     padding:13px 30px;border:1px solid var(--hairline);background:transparent;color:var(--taupe);
@@ -191,10 +191,6 @@
   .price-toggle .t-btn:last-child{border-radius:0 2px 2px 0;}
   .price-toggle .t-btn.active{background:var(--gold-soft);color:var(--espresso);border-color:var(--gold-soft);}
 
-  .currency-note{text-align:center;font-size:12.5px;color:var(--taupe);margin-bottom:40px;}
-  .currency-note #curr-label{color:var(--ivory);font-weight:600;}
-  .currency-note #curr-switch{background:none;border:none;padding:0;font-family:var(--sans);font-size:12.5px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-weight:500;}
-  .currency-note #curr-switch:hover{color:var(--gold-soft);}
 
   .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:940px;margin:0 auto;}
   .price-card{background:var(--sand);padding:54px 46px;position:relative;}
@@ -460,7 +456,6 @@
       <button class="t-btn" data-duration="1">1 Month</button>
       <button class="t-btn active" data-duration="3">3 Months</button>
     </div>
-    <div class="currency-note reveal">Prices shown in <span id="curr-label">EGP</span> · <button id="curr-switch" type="button">Switch to USD</button></div>
 
     <div class="price-grid reveal">
       <div class="price-card" data-m-egp="4,000" data-q-egp="10,500" data-m-usd="150" data-q-usd="350">
@@ -581,14 +576,11 @@
     reveals.forEach(el => el.classList.add('in'));
   }
 
-  // pricing: duration + currency
+  // pricing: duration + currency (currency is auto-detected only, no manual switch)
   const toggleBtns = document.querySelectorAll('.price-toggle .t-btn');
   const priceCards = document.querySelectorAll('.price-card');
-  const currLabel = document.getElementById('curr-label');
-  const currSwitch = document.getElementById('curr-switch');
   let duration = document.querySelector('.price-toggle .t-btn.active').dataset.duration;
   let currency = 'EGP';
-  let userSetCurrency = false;
 
   function renderPrices() {
     priceCards.forEach(card => {
@@ -603,8 +595,6 @@
         unitEl.textContent = '/ ' + period;
       }
     });
-    if (currLabel) currLabel.textContent = currency;
-    if (currSwitch) currSwitch.textContent = currency === 'EGP' ? 'Switch to USD' : 'Switch to EGP';
   }
 
   toggleBtns.forEach(btn => {
@@ -616,21 +606,14 @@
     });
   });
 
-  if (currSwitch) {
-    currSwitch.addEventListener('click', () => {
-      userSetCurrency = true;
-      currency = currency === 'EGP' ? 'USD' : 'EGP';
-      renderPrices();
-    });
-  }
-
   renderPrices();
 
   // auto-detect currency by location (Egypt -> EGP, elsewhere -> USD).
   // Conservative by design: only switches to USD on a confident signal from
   // the location lookup. Any failure, timeout, or ambiguity stays on EGP —
   // showing a local visitor an inflated USD price by mistake is worse than
-  // occasionally showing a visitor abroad the EGP price (they can switch).
+  // occasionally showing a visitor abroad the cheaper EGP price. No manual
+  // switch is exposed, since EGP is intentionally priced lower than USD.
   (async function detectCurrency() {
     let detected = null;
     try {
@@ -643,7 +626,7 @@
         detected = data.country_code === 'EG' ? 'EGP' : 'USD';
       }
     } catch (e) { /* no confident signal — stay on EGP default */ }
-    if (!userSetCurrency && detected && detected !== currency) {
+    if (detected && detected !== currency) {
       currency = detected;
       renderPrices();
     }
