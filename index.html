@@ -95,6 +95,10 @@
   @media(min-width:860px){.nav-links{display:flex;}}
   .nav-cta{display:none;}
   @media(min-width:860px){.nav-cta{display:inline-flex;}}
+  .nav-cta-mobile{display:inline-flex;padding:9px 16px;font-size:11.5px;}
+  @media(min-width:860px){.nav-cta-mobile{display:none;}}
+  .lang-switch{font-size:12px;font-weight:600;letter-spacing:0.04em;color:var(--taupe);border:1px solid var(--hairline);border-radius:2px;padding:8px 14px;margin-inline-end:14px;transition:all .3s ease;}
+  .lang-switch:hover{color:var(--gold);border-color:var(--gold);}
 
   /* ---------- HERO ---------- */
   .hero{position:relative;padding:220px 0 150px;overflow:hidden;}
@@ -177,7 +181,7 @@
   .packages .eyebrow{display:block;margin-bottom:22px;}
   .packages h2{font-size:clamp(32px,3.8vw,46px);}
 
-  .price-toggle{display:flex;justify-content:center;gap:0;margin-bottom:64px;}
+  .price-toggle{display:flex;justify-content:center;gap:0;margin-bottom:22px;}
   .price-toggle .t-btn{
     font-family:var(--sans);font-size:12.5px;letter-spacing:0.04em;font-weight:500;
     padding:13px 30px;border:1px solid var(--hairline);background:transparent;color:var(--taupe);
@@ -186,6 +190,11 @@
   .price-toggle .t-btn:first-child{border-radius:2px 0 0 2px;border-right:none;}
   .price-toggle .t-btn:last-child{border-radius:0 2px 2px 0;}
   .price-toggle .t-btn.active{background:var(--gold-soft);color:var(--espresso);border-color:var(--gold-soft);}
+
+  .currency-note{text-align:center;font-size:12.5px;color:var(--taupe);margin-bottom:40px;}
+  .currency-note #curr-label{color:var(--ivory);font-weight:600;}
+  .currency-note #curr-switch{background:none;border:none;padding:0;font-family:var(--sans);font-size:12.5px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-weight:500;}
+  .currency-note #curr-switch:hover{color:var(--gold-soft);}
 
   .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:940px;margin:0 auto;}
   .price-card{background:var(--sand);padding:54px 46px;position:relative;}
@@ -297,6 +306,8 @@
     <a href="#why">Why Train With Me</a>
     <a href="#packages">Packages</a>
   </div>
+  <a class="lang-switch" href="coach-bigzee-zk-online-ar.html">عربي</a>
+  <a class="btn btn-primary nav-cta-mobile" href="https://imeetify.com/zeinakassas/BigZee" target="_blank" rel="noopener">Book</a>
   <a class="btn btn-ghost nav-cta" href="https://imeetify.com/zeinakassas/BigZee" target="_blank" rel="noopener">Book a Free Consultation</a>
 </nav>
 
@@ -434,9 +445,10 @@
       <button class="t-btn" data-duration="1">1 Month</button>
       <button class="t-btn active" data-duration="3">3 Months</button>
     </div>
+    <div class="currency-note reveal">Prices shown in <span id="curr-label">EGP</span> · <button id="curr-switch" type="button">Switch to USD</button></div>
 
     <div class="price-grid reveal">
-      <div class="price-card" data-m="4,000" data-q="10,500">
+      <div class="price-card" data-m-egp="4,000" data-q-egp="10,500" data-m-usd="150" data-q-usd="350">
         <div class="p-name">Training Only</div>
         <div class="p-sub">Fully personalized training programming</div>
         <div class="p-price"><span class="amount">10,500</span> <span class="unit">EGP / 3 months</span></div>
@@ -449,7 +461,7 @@
         </ul>
         <a class="btn btn-ghost" href="https://imeetify.com/zeinakassas/BigZee" target="_blank" rel="noopener">Book a Free Consultation</a>
       </div>
-      <div class="price-card highlight" data-m="6,500" data-q="17,500">
+      <div class="price-card highlight" data-m-egp="6,500" data-q-egp="17,500" data-m-usd="250" data-q-usd="600">
         <span class="tag-pill">Recommended</span>
         <div class="p-name">Training + Nutrition</div>
         <div class="p-sub">Full performance &amp; lifestyle coaching</div>
@@ -554,27 +566,74 @@
     reveals.forEach(el => el.classList.add('in'));
   }
 
-  // pricing toggle
+  // pricing: duration + currency
   const toggleBtns = document.querySelectorAll('.price-toggle .t-btn');
   const priceCards = document.querySelectorAll('.price-card');
+  const currLabel = document.getElementById('curr-label');
+  const currSwitch = document.getElementById('curr-switch');
+  let duration = document.querySelector('.price-toggle .t-btn.active').dataset.duration;
+  let currency = 'EGP';
+  let userSetCurrency = false;
+
+  function renderPrices() {
+    priceCards.forEach(card => {
+      const amountEl = card.querySelector('.amount');
+      const unitEl = card.querySelector('.unit');
+      const period = duration === '1' ? 'month' : '3 months';
+      if (currency === 'EGP') {
+        amountEl.textContent = duration === '1' ? card.dataset.mEgp : card.dataset.qEgp;
+        unitEl.textContent = 'EGP / ' + period;
+      } else {
+        amountEl.textContent = '$' + (duration === '1' ? card.dataset.mUsd : card.dataset.qUsd);
+        unitEl.textContent = '/ ' + period;
+      }
+    });
+    if (currLabel) currLabel.textContent = currency;
+    if (currSwitch) currSwitch.textContent = currency === 'EGP' ? 'Switch to USD' : 'Switch to EGP';
+  }
+
   toggleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       toggleBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const dur = btn.dataset.duration;
-      priceCards.forEach(card => {
-        const amountEl = card.querySelector('.amount');
-        const unitEl = card.querySelector('.unit');
-        if (dur === '1') {
-          amountEl.textContent = card.dataset.m;
-          unitEl.textContent = 'EGP / month';
-        } else {
-          amountEl.textContent = card.dataset.q;
-          unitEl.textContent = 'EGP / 3 months';
-        }
-      });
+      duration = btn.dataset.duration;
+      renderPrices();
     });
   });
+
+  if (currSwitch) {
+    currSwitch.addEventListener('click', () => {
+      userSetCurrency = true;
+      currency = currency === 'EGP' ? 'USD' : 'EGP';
+      renderPrices();
+    });
+  }
+
+  renderPrices();
+
+  // auto-detect currency by location (Egypt -> EGP, elsewhere -> USD)
+  (async function detectCurrency() {
+    let detected = null;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+      clearTimeout(timer);
+      const data = await res.json();
+      if (data && data.country_code) {
+        detected = data.country_code === 'EG' ? 'EGP' : 'USD';
+      }
+    } catch (e) {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz) detected = tz === 'Africa/Cairo' ? 'EGP' : 'USD';
+      } catch (e2) { /* keep default EGP */ }
+    }
+    if (!userSetCurrency && detected && detected !== currency) {
+      currency = detected;
+      renderPrices();
+    }
+  })();
 </script>
 
 </body>
