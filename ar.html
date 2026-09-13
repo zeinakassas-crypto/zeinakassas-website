@@ -210,6 +210,11 @@
   .price-card li:last-child{border-bottom:1px solid var(--hairline);}
   .price-card.highlight li:last-child{border-bottom:1px solid var(--hairline-on-dark);}
   .price-card .btn{width:100%;justify-content:center;}
+  .pay-link{display:block;text-align:center;margin-top:18px;font-size:13px;color:var(--taupe);}
+  .pay-link:hover{color:var(--gold);}
+  .pay-link .pay-method{color:var(--gold);font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+  .price-card.highlight .pay-link{color:rgba(252,248,237,0.6);}
+  .price-card.highlight .pay-link .pay-method{color:var(--gold-soft);}
 
   /* ---------- PROCESS ---------- */
   .process{padding:160px 0;}
@@ -470,6 +475,7 @@
           <li>تواصل مباشر مع الكوتش</li>
         </ul>
         <a class="btn btn-ghost" href="https://imeetify.com/zeinakassas/BigZee" target="_blank" rel="noopener">احجز استشارتك المجانية</a>
+        <a class="pay-link" href="https://ipn.eg/S/bigzee/instapay/03EiLL" target="_blank" rel="noopener">جاهز تدفع؟ <span class="pay-method">ادفع عن طريق إنستاباي</span></a>
       </div>
       <div class="price-card highlight" data-m-egp="6,500" data-q-egp="17,500" data-m-usd="250" data-q-usd="600">
         <span class="tag-pill">الموصى بيها</span>
@@ -484,6 +490,7 @@
           <li>تواصل مباشر مع الكوتش</li>
         </ul>
         <a class="btn btn-light" href="https://imeetify.com/zeinakassas/BigZee" target="_blank" rel="noopener">احجز استشارتك المجانية</a>
+        <a class="pay-link" href="https://ipn.eg/S/bigzee/instapay/03EiLL" target="_blank" rel="noopener">جاهز تدفع؟ <span class="pay-method">ادفع عن طريق إنستاباي</span></a>
       </div>
     </div>
   </div>
@@ -579,6 +586,8 @@
   // pricing: duration + currency (currency is auto-detected only, no manual switch)
   const toggleBtns = document.querySelectorAll('.price-toggle .t-btn');
   const priceCards = document.querySelectorAll('.price-card');
+  const INSTAPAY_URL = 'https://ipn.eg/S/bigzee/instapay/03EiLL';
+  const PAYPAL_URL = 'https://paypal.me/CoachBigZee?locale.x=en_US&country.x=EG';
   let duration = document.querySelector('.price-toggle .t-btn.active').dataset.duration;
   let currency = 'EGP';
 
@@ -586,13 +595,22 @@
     priceCards.forEach(card => {
       const amountEl = card.querySelector('.amount');
       const unitEl = card.querySelector('.unit');
+      const payLink = card.querySelector('.pay-link');
       const period = duration === '1' ? 'شهر' : '3 شهور';
       if (currency === 'EGP') {
         amountEl.textContent = duration === '1' ? card.dataset.mEgp : card.dataset.qEgp;
         unitEl.textContent = 'جنيه / ' + period;
+        if (payLink) {
+          payLink.href = INSTAPAY_URL;
+          payLink.querySelector('.pay-method').textContent = 'ادفع عن طريق إنستاباي';
+        }
       } else {
         amountEl.textContent = '$' + (duration === '1' ? card.dataset.mUsd : card.dataset.qUsd);
         unitEl.textContent = '/ ' + period;
+        if (payLink) {
+          payLink.href = PAYPAL_URL;
+          payLink.querySelector('.pay-method').textContent = 'ادفع عن طريق PayPal';
+        }
       }
     });
   }
