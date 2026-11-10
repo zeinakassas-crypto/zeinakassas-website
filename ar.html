@@ -5,9 +5,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>زينة قصاص — Coach Bigzee | تدريب أداء احترافي</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/zk-logo-dark.webp">
+<meta name="theme-color" content="#0B0F18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ivory:#F4F5F2;
@@ -87,8 +90,19 @@
     padding:18px 60px;
     box-shadow:0 1px 0 var(--hairline);
   }
-  .brand{font-family:var(--sans);font-size:29px;font-weight:800;letter-spacing:-0.01em;color:var(--ivory);}
-  .brand em{font-style:normal;color:var(--gold-soft);}
+  .brand{display:inline-flex;align-items:center;gap:18px;direction:ltr;color:var(--ivory);line-height:1;}
+  .brand-mark{height:36px;width:auto;display:block;overflow:visible;transition:height .4s ease;}
+  .brand-mark .mk-ink{fill:currentColor;}
+  .brand-mark .mk-arrow{fill:var(--gold-soft);transition:transform .45s cubic-bezier(.22,.61,.36,1);}
+  .brand:hover .mk-arrow{transform:translate(34px,-34px);}
+  nav.scrolled .brand-mark{height:30px;}
+  .brand-divider{width:1px;align-self:stretch;min-height:30px;background:var(--hairline-on-dark);}
+  .brand-tag{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:500;letter-spacing:0.34em;line-height:1.7;text-transform:uppercase;color:var(--ivory);}
+  .brand-tag span{display:block;}
+  .brand-tag .eat{color:var(--gold-soft);}
+  .tagline{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:500;letter-spacing:0.36em;text-transform:uppercase;color:var(--ivory);direction:ltr;display:inline-flex;align-items:center;gap:14px;white-space:nowrap;}
+  .tagline i{width:6px;height:6px;border-radius:50%;background:var(--gold-soft);display:inline-block;}
+  @media(max-width:640px){.brand-divider,.brand-tag{display:none;}.brand-mark{height:30px;}nav.scrolled .brand-mark{height:26px;}}
   .nav-links{display:none;gap:46px;font-size:12.5px;letter-spacing:0.04em;}
   .nav-links a{opacity:0.7;transition:opacity .3s ease;}
   .nav-links a:hover{opacity:1;}
@@ -250,7 +264,10 @@
   /* ---------- FOOTER ---------- */
   footer{background:var(--espresso);color:var(--ivory);padding:80px 0 42px;}
   .footer-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:46px;padding-bottom:52px;border-bottom:1px solid var(--hairline-on-dark);margin-bottom:34px;}
-  .footer-brand .brand{color:var(--ivory);margin-bottom:16px;}
+  .footer-brand .brand{color:var(--ivory);margin-bottom:22px;}
+  .footer-brand .brand{display:flex;width:fit-content;}
+  .footer-brand .brand-mark{height:52px;}
+  .footer-brand .tagline{margin-bottom:20px;}
   .footer-brand p{font-size:13px;color:rgba(252,248,237,0.55);max-width:280px;}
   .footer-links{display:flex;gap:64px;flex-wrap:wrap;}
   .footer-col h4{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:18px;font-weight:600;}
@@ -315,7 +332,7 @@
 <body>
 
 <nav id="nav">
-  <a class="brand" href="#top">Coach Big<em>zee</em></a>
+  <a class="brand" href="#top" aria-label="ZK — Move Right, Eat Well"><svg class="brand-mark" viewBox="650 365 688 466" role="img" aria-label="ZK"><path class="mk-ink" d="M650 365H942V435L721 761H942V831H650V761L871 435H650Z"/><path class="mk-ink" d="M1012 365H1082V831H1012Z"/><path class="mk-ink" d="M1082 682L1131 633L1327 831H1227Z"/><path class="mk-arrow" d="M1082 585L1222 441L1195 412L1338 377L1301 520L1272 492L1131 633L1082 682Z"/></svg><span class="brand-divider" aria-hidden="true"></span><span class="brand-tag" aria-hidden="true"><span>Move Right</span><span class="eat">Eat Well</span></span></a>
   <div class="nav-links">
     <a href="#experience">الخبرة</a>
     <a href="#about">نبذة عني</a>
@@ -538,7 +555,8 @@
   <div class="wrap">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="brand">Coach Big<em>zee</em></div>
+        <div class="brand footer-logo"><svg class="brand-mark" viewBox="650 365 688 466" role="img" aria-label="ZK"><path class="mk-ink" d="M650 365H942V435L721 761H942V831H650V761L871 435H650Z"/><path class="mk-ink" d="M1012 365H1082V831H1012Z"/><path class="mk-ink" d="M1082 682L1131 633L1327 831H1227Z"/><path class="mk-arrow" d="M1082 585L1222 441L1195 412L1338 377L1301 520L1272 492L1131 633L1082 682Z"/></svg></div>
+        <div class="tagline">Move Right <i aria-hidden="true"></i> Eat Well</div>
         <p>تدريب بدني وقوة أوليمبي، متصمم حواليك انت.</p>
       </div>
       <div class="footer-links">
