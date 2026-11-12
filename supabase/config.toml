@@ -1,0 +1,11 @@
+# Edge Function settings for the ZK shop.
+# create-order / order-status are public (protected by the order's secret token);
+# admin-action checks the signed-in admin itself.
+[functions.create-order]
+verify_jwt = false
+
+[functions.order-status]
+verify_jwt = false
+
+[functions.admin-action]
+verify_jwt = false

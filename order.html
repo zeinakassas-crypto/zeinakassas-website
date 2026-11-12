@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Your order | Coach Bigzee</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="theme-color" content="#0B0F18">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@500;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shop/shop.css">
+<style>
+  main{padding:60px 0 20px;}
+  .box{max-width:640px;margin:0 auto;background:var(--sand);border:1px solid var(--hair);padding:40px 36px;border-radius:2px;}
+  .box h1{font-size:clamp(26px,4vw,36px);margin:14px 0 10px;}
+  .box > p{color:var(--taupe);margin-bottom:22px;}
+  .head{display:flex;gap:18px;align-items:center;margin-bottom:26px;}
+  .head img{width:76px;border-radius:2px;}
+  .head small{color:var(--taupe);display:block;font-size:12.5px;}
+  .timeline{list-style:none;margin:26px 0;border-top:1px solid var(--hair);}
+  .timeline li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--hair);font-size:14px;color:var(--taupe);}
+  .timeline li .d{width:22px;height:22px;border-radius:50%;border:1px solid var(--hair2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;}
+  .timeline li.done{color:var(--ivory);}
+  .timeline li.done .d{background:var(--ok);border-color:var(--ok);color:var(--bg);}
+  .timeline li.now .d{border-color:var(--lime);box-shadow:0 0 0 4px rgba(232,255,66,.15);}
+  .dl{width:100%;font-size:15px;padding:19px;margin-top:8px;}
+  .kv{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;color:var(--taupe);}
+  .kv b{color:var(--ivory);font-weight:600;}
+  .bookmark{font-size:12.5px;color:var(--taupe);margin-top:22px;}
+  .center{text-align:center;padding:40px 0;color:var(--taupe);}
+  @media(max-width:640px){.box{padding:26px 20px;}}
+</style>
+</head>
+<body>
+<nav class="shop-nav">
+  <div class="wrap">
+    <a class="brand" href="eat-well.html" aria-label="ZK">
+      <svg viewBox="650 365 688 466" role="img" aria-label="ZK"><path class="mk-ink" d="M650 365H942V435L721 761H942V831H650V761L871 435H650Z"/><path class="mk-ink" d="M1012 365H1082V831H1012Z"/><path class="mk-ink" d="M1082 682L1131 633L1327 831H1227Z"/><path class="mk-arrow" d="M1082 585L1222 441L1195 412L1338 377L1301 520L1272 492L1131 633L1082 682Z"/></svg>
+      <span class="brand-tag"><span>Move Right</span><span class="eat">Eat Well</span></span>
+    </a>
+    <div class="nav-right"><button class="lang-switch" id="langBtn" type="button">عربي</button></div>
+  </div>
+</nav>
+
+<main><div class="wrap"><div class="box" id="box"><div class="center"><span class="spinner"></span></div></div></div></main>
+
+<footer class="shop-foot"><div class="wrap">
+  <span>© 2026 Coach Bigzee — Zeina Kassas</span>
+  <span><a href="https://instagram.com/coachbigzee" target="_blank" rel="noopener">@coachbigzee</a> · <a href="mailto:zeina.kassas@gmail.com">zeina.kassas@gmail.com</a></span>
+</div></footer>
+
+<script src="assets/shop/shop-config.js"></script>
+<script>
+(function () {
+  var C = window.ZK_SHOP, q = new URLSearchParams(location.search);
+  var id = q.get('id'), token = q.get('t'), isNew = q.get('new') === '1';
+  var lang = q.get('lang') === 'ar' ? 'ar' : 'en';
+  var T = {
+    en: {
+      title_new: 'Order received — thank you!', title: 'Your order',
+      pending_p: "We're checking your receipt now. As soon as your payment is confirmed you'll get an email with your PDF, and the download button below will unlock. This page updates by itself.",
+      paid_title: 'Payment confirmed 🎉', paid_p: 'Your plan is ready. Download it below — it was also sent to your email.',
+      paid_print_p: "Your payment is confirmed. Download your PDF below. We'll message you on WhatsApp about your printed copy.",
+      rejected_title: "We couldn't confirm your payment",
+      rejected_p: 'Please reply to our email or message @coachbigzee on Instagram with your receipt and we will sort it out.',
+      reason: 'Reason', order: 'Order', amount: 'Paid', format: 'Format', pdf: 'Digital PDF', print: 'Printed copy + PDF',
+      egp: 'EGP', print_fee: 'Printing + shipping',
+      s1: 'Order placed & receipt uploaded', s2: 'Payment confirmed by Coach Bigzee', s3: 'PDF emailed + ready to download',
+      p1: 'Printing + shipping cost sent on WhatsApp', p2: 'Printing + shipping paid', p3: 'Printed copy shipped',
+      download: '⬇ Download your PDF', downloading: 'Preparing your download…', locked: '🔒 Download unlocks after payment confirmation',
+      bookmark: 'Tip: bookmark this page — it is your personal download link. Please do not share it.',
+      not_found: "We couldn't find this order. Please use the link from your email.",
+      limit: 'Download limit reached — please contact us.', err: 'Something went wrong, please try again.',
+      setup: 'The shop is being set up — please try again shortly.'
+    },
+    ar: {
+      title_new: 'استلمنا طلبك — شكراً!', title: 'طلبك',
+      pending_p: 'بنراجع الإيصال دلوقتي. أول ما الدفع يتأكد هيوصلك إيميل فيه الـ PDF، وزرار التحميل تحت هيتفتح. الصفحة دي بتتحدّث لوحدها.',
+      paid_title: 'تم تأكيد الدفع 🎉', paid_p: 'خطتك جاهزة. نزّلها من تحت — واتبعتت كمان على إيميلك.',
+      paid_print_p: 'الدفع اتأكد. نزّل الـ PDF من تحت، وهنكلمك على واتساب بخصوص النسخة المطبوعة.',
+      rejected_title: 'ماقدرناش نأكد الدفع',
+      rejected_p: 'من فضلك رد على الإيميل أو ابعتلنا على إنستجرام @coachbigzee ومعاك الإيصال وهنحلها.',
+      reason: 'السبب', order: 'الطلب', amount: 'المدفوع', format: 'النوع', pdf: 'ملف PDF', print: 'نسخة مطبوعة + PDF',
+      egp: 'جنيه', print_fee: 'الطباعة والشحن',
+      s1: 'الطلب اتسجل والإيصال اترفع', s2: 'كوتش بيجزي أكدت الدفع', s3: 'الـ PDF اتبعت على الإيميل وجاهز للتحميل',
+      p1: 'تكلفة الطباعة والشحن اتبعتت على واتساب', p2: 'الطباعة والشحن اتدفعوا', p3: 'النسخة المطبوعة اتشحنت',
+      download: '⬇ نزّل الـ PDF', downloading: 'جاري تجهيز التحميل…', locked: '🔒 التحميل بيتفتح بعد تأكيد الدفع',
+      bookmark: 'نصيحة: احفظ الصفحة دي — ده لينك التحميل الخاص بيك. ماتشاركهوش مع حد.',
+      not_found: 'مش لاقيين الطلب ده. استخدم اللينك اللي في الإيميل.',
+      limit: 'وصلت للحد الأقصى للتحميل — كلّمنا.', err: 'حصلت مشكلة، جرّب تاني.',
+      setup: 'المتجر بيتجهز — جرّب كمان شوية.'
+    }
+  };
+  var t = function (k) { return T[lang][k]; };
+  var box = document.getElementById('box'), data = null, timer = null;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+
+  function setLang() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('langBtn').textContent = lang === 'ar' ? 'EN' : 'عربي';
+    document.querySelector('.brand').href = 'eat-well.html' + (lang === 'ar' ? '?lang=ar' : '');
+  }
+  document.getElementById('langBtn').onclick = function () {
+    lang = lang === 'ar' ? 'en' : 'ar'; q.set('lang', lang); history.replaceState(null, '', '?' + q); setLang(); render();
+  };
+
+  function step(label, state) { return '<li class="' + state + '"><span class="d">' + (state === 'done' ? '✓' : '') + '</span>' + label + '</li>'; }
+
+  function render() {
+    if (!data) return;
+    if (data.error === 'not_found') { box.innerHTML = '<div class="center">' + t('not_found') + '</div>'; return; }
+    var paid = data.status === 'paid', rej = data.status === 'rejected', isPrint = data.format === 'print';
+    var badge = '<span class="badge b-' + data.status + '">' + data.status + '</span>' + (isPrint ? ' <span class="badge b-print">print</span>' : '');
+    var title = paid ? t('paid_title') : rej ? t('rejected_title') : (isNew ? t('title_new') : t('title'));
+    var p = paid ? t(isPrint ? 'paid_print_p' : 'paid_p') : rej ? t('rejected_p') : t('pending_p');
+    var steps = step(t('s1'), 'done') + step(t('s2'), paid ? 'done' : rej ? '' : 'now') + step(t('s3'), paid ? 'done' : '');
+    if (isPrint) {
+      var ps = ['awaiting_quote', 'quote_sent', 'fee_paid', 'shipped'].indexOf(data.print_status);
+      steps += step(t('p1') + (data.print_fee != null ? ' — ' + fmt(data.print_fee) + ' ' + t('egp') : ''), ps >= 1 ? 'done' : (paid ? 'now' : ''));
+      steps += step(t('p2'), ps >= 2 ? 'done' : (ps === 1 ? 'now' : ''));
+      steps += step(t('p3'), ps >= 3 ? 'done' : (ps === 2 ? 'now' : ''));
+    }
+    box.innerHTML =
+      '<div class="head"><img src="assets/shop/eat-well-cover.webp" alt=""><div><strong>' + esc(data.product || 'Eat Well') + '</strong>' +
+      '<small>' + t('order') + ' #' + esc(data.order_no) + ' · ' + esc(new Date(data.created_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB')) + '</small></div></div>' +
+      badge + '<h1>' + title + '</h1><p>' + p + '</p>' +
+      (rej && data.reject_reason ? '<div class="notice err" style="margin-bottom:20px">' + t('reason') + ': ' + esc(data.reject_reason) + '</div>' : '') +
+      '<div class="kv"><span>' + t('format') + '</span><b>' + t(isPrint ? 'print' : 'pdf') + '</b></div>' +
+      '<div class="kv"><span>' + t('amount') + '</span><b>' + fmt(data.amount) + ' ' + t('egp') + '</b></div>' +
+      (isPrint && data.print_fee != null ? '<div class="kv"><span>' + t('print_fee') + '</span><b>' + fmt(data.print_fee) + ' ' + t('egp') + '</b></div>' : '') +
+      '<ul class="timeline">' + steps + '</ul>' +
+      (paid ? '<button class="btn btn-primary dl" id="dlBtn">' + t('download') + '</button>'
+            : rej ? '' : '<button class="btn btn-ghost dl" disabled>' + t('locked') + '</button>') +
+      '<div class="notice err" id="dlErr" style="display:none;margin-top:14px"></div>' +
+      '<p class="bookmark">' + t('bookmark') + '</p>';
+    var b = document.getElementById('dlBtn');
+    if (b) b.onclick = download;
+  }
+
+  function call(download) {
+    return fetch(C.fn('order-status'), {
+      method: 'POST', headers: C.headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ id: id, token: token, download: !!download })
+    }).then(function (r) { return r.json(); });
+  }
+
+  function load() {
+    call(false).then(function (j) {
+      data = j; render();
+      clearTimeout(timer);
+      if (j.status === 'pending' || (j.format === 'print' && j.print_status !== 'shipped' && j.status !== 'rejected')) timer = setTimeout(load, 20000);
+    }).catch(function () { timer = setTimeout(load, 20000); });
+  }
+
+  function download() {
+    var b = document.getElementById('dlBtn'), e = document.getElementById('dlErr');
+    b.disabled = true; b.innerHTML = '<span class="spinner"></span> ' + t('downloading');
+    call(true).then(function (j) {
+      if (j.url) { location.href = j.url; }
+      else { e.textContent = j.error === 'download_limit' ? t('limit') : t('err'); e.style.display = 'block'; }
+    }).catch(function () { e.textContent = t('err'); e.style.display = 'block'; })
+      .finally(function () { b.disabled = false; b.innerHTML = t('download'); });
+  }
+
+  setLang();
+  if (!C.configured()) { box.innerHTML = '<div class="center">' + t('setup') + '</div>'; return; }
+  if (!id || !token) { data = { error: 'not_found' }; render(); return; }
+  load();
+})();
+</script>
+</body>
+</html>

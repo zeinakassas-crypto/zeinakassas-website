@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Orders — ZK Shop Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="theme-color" content="#0B0F18">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shop/shop.css">
+<style>
+  main{padding:34px 0 40px;}
+  .login{max-width:400px;margin:60px auto;background:var(--sand);border:1px solid var(--hair);padding:34px;}
+  .login h1{font-size:24px;margin-bottom:20px;}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+  .top h1{font-size:28px;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+  .stat{background:var(--sand);border:1px solid var(--hair);padding:16px 18px;}
+  .stat b{font-family:var(--serif);font-size:26px;display:block;line-height:1.2;}
+  .stat span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .tab{background:none;border:1px solid var(--hair2);color:var(--taupe);padding:9px 14px;font-size:12.5px;cursor:pointer;font-family:inherit;border-radius:2px;}
+  .tab.active{background:var(--lime);color:var(--bg);border-color:var(--lime);font-weight:600;}
+  .tab .c{opacity:.7;margin-inline-start:4px;}
+  .search{width:100%;max-width:320px;background:var(--bg);border:1px solid var(--hair2);color:var(--ivory);padding:10px 12px;font-family:inherit;font-size:14px;margin-bottom:18px;border-radius:2px;}
+  .order{background:var(--sand);border:1px solid var(--hair);padding:20px 22px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:18px;}
+  .order.pending{border-inline-start:3px solid var(--lime);}
+  .order h3{font-size:17px;margin-bottom:4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .meta{font-size:13px;color:var(--taupe);line-height:1.8;}
+  .meta a{color:var(--ivory);text-decoration:underline;text-underline-offset:3px;}
+  .meta b{color:var(--ivory);font-weight:500;}
+  .acts{display:flex;flex-direction:column;gap:8px;min-width:220px;}
+  .acts .btn{padding:11px 16px;font-size:12.5px;}
+  .btn-ok{background:var(--ok);color:var(--bg);}
+  .btn-ok:hover{filter:brightness(1.1);}
+  .btn-danger{border-color:rgba(255,107,107,.5);color:var(--err);background:none;}
+  .print-box{margin-top:12px;padding:12px;background:var(--bg);border:1px dashed var(--hair2);font-size:13px;}
+  .print-box .r{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .print-box input{width:120px;background:var(--sand);border:1px solid var(--hair2);color:var(--ivory);padding:9px;font-family:inherit;}
+  .mail-st{font-size:12px;margin-top:6px;}
+  .mail-st.ok{color:var(--ok);} .mail-st.err{color:var(--err);}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;flex-direction:column;gap:12px;}
+  .modal.open{display:flex;}
+  .modal img{max-height:84vh;max-width:100%;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ivory);color:var(--bg);padding:12px 20px;font-size:14px;font-weight:600;border-radius:2px;display:none;z-index:200;max-width:90vw;}
+  .toast.show{display:block;}
+  .empty{color:var(--taupe);padding:40px;text-align:center;border:1px dashed var(--hair2);}
+  @media(max-width:760px){.order{grid-template-columns:1fr;}.acts{min-width:0;}.stats{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<nav class="shop-nav"><div class="wrap">
+  <a class="brand" href="eat-well.html" aria-label="ZK">
+    <svg viewBox="650 365 688 466" role="img" aria-label="ZK"><path class="mk-ink" d="M650 365H942V435L721 761H942V831H650V761L871 435H650Z"/><path class="mk-ink" d="M1012 365H1082V831H1012Z"/><path class="mk-ink" d="M1082 682L1131 633L1327 831H1227Z"/><path class="mk-arrow" d="M1082 585L1222 441L1195 412L1338 377L1301 520L1272 492L1131 633L1082 682Z"/></svg>
+    <span class="brand-tag"><span>Shop</span><span class="eat">Admin</span></span>
+  </a>
+  <div class="nav-right"><button class="lang-switch" id="logoutBtn" hidden>Sign out</button></div>
+</div></nav>
+
+<main><div class="wrap">
+  <form class="login" id="loginForm" hidden>
+    <h1>Admin sign in</h1>
+    <div class="field"><label for="lemail">Email</label><input id="lemail" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="lpass">Password</label><input id="lpass" type="password" autocomplete="current-password" required></div>
+    <button class="btn btn-primary" style="width:100%" type="submit">Sign in</button>
+    <div class="notice err" id="loginErr" style="display:none;margin-top:14px"></div>
+  </form>
+
+  <div id="app" hidden>
+    <div class="top">
+      <h1>Eat Well orders</h1>
+      <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stPending">0</b><span>Need review</span></div>
+      <div class="stat"><b id="stPrint">0</b><span>Print to handle</span></div>
+      <div class="stat"><b id="stPaid">0</b><span>Paid orders</span></div>
+      <div class="stat"><b id="stRev">0</b><span>Confirmed EGP</span></div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-f="pending">Need review<span class="c"></span></button>
+      <button class="tab" data-f="print">Printed copies<span class="c"></span></button>
+      <button class="tab" data-f="paid">Paid<span class="c"></span></button>
+      <button class="tab" data-f="rejected">Rejected<span class="c"></span></button>
+      <button class="tab" data-f="all">All<span class="c"></span></button>
+    </div>
+    <input class="search" id="search" placeholder="Search name, email, phone, order #">
+    <div id="list"></div>
+  </div>
+</div></main>
+
+<div class="modal" id="modal"><img id="modalImg" alt="Receipt"><a class="btn btn-ghost btn-sm" id="modalOpen" target="_blank" rel="noopener">Open full size ↗</a></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="assets/shop/shop-config.js"></script>
+<script>
+(function () {
+  var C = window.ZK_SHOP;
+  var $ = function (id) { return document.getElementById(id); };
+  if (!C.configured()) { document.querySelector('main .wrap').innerHTML = '<div class="empty">Set SUPABASE_URL and SUPABASE_ANON_KEY in assets/shop/shop-config.js first (see SHOP-SETUP.md).</div>'; return; }
+
+  var sb = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
+  var orders = [], filter = 'pending', query = '';
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var fmt = function (n) { return Number(n || 0).toLocaleString('en-US'); };
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 4500); }
+
+  function waNumber(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (d.indexOf('00') === 0) d = d.slice(2);
+    if (/^01\d{9}$/.test(d)) d = '2' + d;           // Egyptian local 01x… → 201x…
+    return d;
+  }
+
+  /* ---------- auth ---------- */
+  async function boot() {
+    var s = (await sb.auth.getSession()).data.session;
+    $('loginForm').hidden = !!s; $('app').hidden = !s; $('logoutBtn').hidden = !s;
+    if (s) load();
+  }
+  $('loginForm').onsubmit = async function (e) {
+    e.preventDefault();
+    var r = await sb.auth.signInWithPassword({ email: $('lemail').value.trim(), password: $('lpass').value });
+    if (r.error) { $('loginErr').textContent = r.error.message; $('loginErr').style.display = 'block'; return; }
+    boot();
+  };
+  $('logoutBtn').onclick = async function () { await sb.auth.signOut(); boot(); };
+
+  /* ---------- data ---------- */
+  async function load() {
+    var r = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(1000);
+    if (r.error) { toast('Could not load orders: ' + r.error.message); return; }
+    orders = r.data || [];
+    if (!orders.length) {
+      // signed in but not an admin → RLS returns nothing
+      var a = await sb.from('shop_admins').select('email').limit(1);
+      if (!a.data || !a.data.length) toast('This account is not listed in shop_admins.');
+    }
+    render();
+  }
+  $('refreshBtn').onclick = load;
+  setInterval(function () { if (!$('app').hidden && document.visibilityState === 'visible') load(); }, 60000);
+
+  function needsPrint(o) { return o.format === 'print' && o.status === 'paid' && o.print_status !== 'shipped'; }
+  function matches(o) {
+    if (filter === 'pending' && o.status !== 'pending') return false;
+    if (filter === 'paid' && o.status !== 'paid') return false;
+    if (filter === 'rejected' && o.status !== 'rejected') return false;
+    if (filter === 'print' && o.format !== 'print') return false;
+    if (!query) return true;
+    return [o.order_no, o.customer_name, o.email, o.whatsapp, o.payment_ref].join(' ').toLowerCase().indexOf(query) >= 0;
+  }
+
+  function render() {
+    var pending = orders.filter(function (o) { return o.status === 'pending'; });
+    var paid = orders.filter(function (o) { return o.status === 'paid'; });
+    $('stPending').textContent = pending.length;
+    $('stPrint').textContent = orders.filter(needsPrint).length;
+    $('stPaid').textContent = paid.length;
+    $('stRev').textContent = fmt(paid.reduce(function (s, o) { return s + o.amount_egp; }, 0));
+    var counts = { pending: pending.length, print: orders.filter(function (o) { return o.format === 'print'; }).length, paid: paid.length,
+      rejected: orders.filter(function (o) { return o.status === 'rejected'; }).length, all: orders.length };
+    document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.f === filter); b.querySelector('.c').textContent = '(' + counts[b.dataset.f] + ')'; });
+
+    var list = orders.filter(matches);
+    $('list').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">No orders here.</div>';
+  }
+
+  function card(o) {
+    var wa = waNumber(o.whatsapp);
+    var when = new Date(o.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+    var mail = o.email_sent_at ? '<div class="mail-st ok">✉ PDF emailed ' + new Date(o.email_sent_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) + '</div>'
+      : (o.email_error ? '<div class="mail-st err">✉ Email failed: ' + esc(o.email_error.slice(0, 140)) + '</div>' : '');
+    var acts = '<button class="btn btn-ghost" data-a="receipt" data-id="' + o.id + '">🧾 View receipt</button>';
+    if (o.status === 'pending') {
+      acts += '<button class="btn btn-ok" data-a="confirm" data-id="' + o.id + '">✓ Payment confirmed — send PDF</button>' +
+              '<button class="btn btn-danger" data-a="reject" data-id="' + o.id + '">✕ Reject</button>';
+    } else if (o.status === 'paid') {
+      acts += '<button class="btn btn-ghost" data-a="resend" data-id="' + o.id + '">↻ Resend PDF email</button>';
+    } else {
+      acts += '<button class="btn btn-ok" data-a="confirm" data-id="' + o.id + '">✓ Confirm anyway</button>';
+    }
+    if (wa) acts += '<a class="btn btn-ghost" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>';
+
+    var printBox = '';
+    if (o.format === 'print') {
+      var ps = { awaiting_quote: 'Awaiting quote', quote_sent: 'Quote sent', fee_paid: 'Fee paid', shipped: 'Shipped' }[o.print_status] || '—';
+      printBox = '<div class="print-box"><b>🖨 Printed copy</b> · ' + ps +
+        '<br>Ship to: <b>' + esc(o.city) + '</b> — ' + esc(o.address) +
+        '<div class="r"><input type="number" min="0" step="10" placeholder="Fee EGP" value="' + (o.print_fee_egp == null ? '' : o.print_fee_egp) + '" id="fee-' + o.id + '">' +
+        '<button class="btn btn-orange btn-sm" data-a="quote" data-id="' + o.id + '">Save &amp; send on WhatsApp</button>' +
+        '<button class="btn btn-ghost btn-sm" data-a="fee_paid" data-id="' + o.id + '">Fee paid</button>' +
+        '<button class="btn btn-ghost btn-sm" data-a="shipped" data-id="' + o.id + '">Shipped</button></div></div>';
+    }
+
+    return '<div class="order ' + o.status + '"><div>' +
+      '<h3>#' + o.order_no + ' · ' + esc(o.customer_name) + ' <span class="badge b-' + o.status + '">' + o.status + '</span>' +
+      (o.format === 'print' ? ' <span class="badge b-print">print</span>' : ' <span class="badge" style="background:rgba(244,245,242,.08)">pdf</span>') + '</h3>' +
+      '<div class="meta">' + when + ' · <b>' + fmt(o.amount_egp) + ' EGP</b> · ' + (o.lang === 'ar' ? 'Arabic' : 'English') + '<br>' +
+      '✉ <a href="mailto:' + esc(o.email) + '">' + esc(o.email) + '</a>' + (o.whatsapp ? ' · 📱 ' + esc(o.whatsapp) : '') +
+      (o.payment_ref ? '<br>InstaPay ref: <b>' + esc(o.payment_ref) + '</b>' : '') +
+      (o.notes ? '<br>Notes: ' + esc(o.notes) : '') +
+      (o.reject_reason ? '<br>Reject reason: ' + esc(o.reject_reason) : '') +
+      (o.status === 'paid' ? '<br>Downloads: ' + o.download_count : '') + '</div>' + mail + printBox +
+      '</div><div class="acts">' + acts + '</div></div>';
+  }
+
+  document.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { filter = b.dataset.f; render(); }; });
+  $('search').oninput = function (e) { query = e.target.value.trim().toLowerCase(); render(); };
+
+  /* ---------- actions ---------- */
+  async function act(body) {
+    var r = await sb.functions.invoke('admin-action', { body: body });
+    if (r.error) {
+      var msg = r.error.message;
+      try { msg = (await r.error.context.json()).error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    return r.data;
+  }
+
+  $('list').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-a]'); if (!b) return;
+    var id = b.dataset.id, a = b.dataset.a, o = orders.find(function (x) { return x.id === id; });
+    var label = b.innerHTML;
+    try {
+      if (a === 'receipt') {
+        var r = await act({ action: 'receipt_url', id: id });
+        if (/\.pdf$/i.test(o.receipt_path)) { window.open(r.url, '_blank'); return; }
+        $('modalImg').src = r.url; $('modalOpen').href = r.url; $('modal').classList.add('open'); return;
+      }
+      if (a === 'confirm' && !confirm('Confirm payment of ' + fmt(o.amount_egp) + ' EGP from ' + o.customer_name + '?\n\nThe PDF will be emailed to ' + o.email + ' automatically.')) return;
+      if (a === 'resend' && !confirm('Send the PDF email again to ' + o.email + '?')) return;
+      var reason;
+      if (a === 'reject') { reason = prompt('Reason (sent to the customer, optional):', 'Payment not found / amount does not match'); if (reason === null) return; }
+
+      b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+      if (a === 'confirm' || a === 'resend') {
+        var res = await act({ action: a, id: id });
+        toast(res.emailed ? '✓ Confirmed — PDF emailed to ' + o.email : '✓ Confirmed, but the email failed: ' + res.email_error + ' (customer can still download from their order page)');
+      } else if (a === 'reject') {
+        await act({ action: 'reject', id: id, reason: reason }); toast('Order rejected' + '');
+      } else if (a === 'quote') {
+        var fee = Number($('fee-' + id).value);
+        if (!($('fee-' + id).value) || fee < 0) { toast('Enter the printing + shipping fee first'); return; }
+        var w = window.open('', '_blank');   // open now so the popup isn't blocked
+        await act({ action: 'print_fee', id: id, fee: fee });
+        var link = C.INSTAPAY_URL, ar = o.lang === 'ar';
+        var text = ar
+          ? 'أهلاً ' + o.customer_name + ' 👋\nبخصوص طلبك رقم #' + o.order_no + ' (النسخة المطبوعة من Eat Well):\nتكلفة الطباعة والشحن لـ ' + (o.city || 'عنوانك') + ' هي ' + fmt(fee) + ' جنيه.\nممكن تحوّلها على إنستاباي: ' + link + '\nوابعتلي سكرين شوت الإيصال هنا. شكراً! 🧡'
+          : 'Hi ' + o.customer_name + ' 👋\nAbout your order #' + o.order_no + ' (Eat Well printed copy):\nPrinting + shipping to ' + (o.city || 'your address') + ' is ' + fmt(fee) + ' EGP.\nYou can pay via InstaPay: ' + link + '\nand send me the receipt screenshot here. Thank you! 🧡';
+        var waUrl = 'https://wa.me/' + waNumber(o.whatsapp) + '?text=' + encodeURIComponent(text);
+        if (w) w.location.href = waUrl; else window.open(waUrl, '_blank');
+        toast('Fee saved — WhatsApp message opened');
+      } else if (a === 'fee_paid' || a === 'shipped') {
+        await act({ action: 'print_status', id: id, print_status: a }); toast('Updated');
+      }
+      await load();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    } finally {
+      if (document.body.contains(b)) { b.disabled = false; b.innerHTML = label; }
+    }
+  });
+  $('modal').onclick = function (e) { if (e.target.id !== 'modalOpen') $('modal').classList.remove('open'); };
+
+  boot();
+})();
+</script>
+</body>
+</html>

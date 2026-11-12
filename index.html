@@ -327,6 +327,25 @@
     .closing{padding:76px 0;}
     footer{padding:56px 0 32px;}
   }
+
+  /* ---------- SHOP TEASER ---------- */
+  .shop-teaser{padding:130px 0;border-top:1px solid var(--hairline);}
+  .shop-teaser .wrap{display:grid;grid-template-columns:0.8fr 1.2fr;gap:80px;align-items:center;}
+  .shop-teaser .st-cover{position:relative;max-width:360px;margin:0 auto;}
+  .shop-teaser .st-cover img{width:100%;box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 0 1px var(--hairline);transform:rotate(-2deg);}
+  .shop-teaser .st-flag{position:absolute;top:-12px;right:-10px;background:var(--bronze);color:var(--ivory);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;z-index:1;}
+  .shop-teaser .eyebrow{display:block;margin-bottom:20px;}
+  .shop-teaser h2{font-size:clamp(32px,3.8vw,46px);margin-bottom:20px;line-height:1.15;}
+  .shop-teaser h2 em{font-style:normal;color:var(--bronze);}
+  .shop-teaser p{color:var(--taupe);font-size:16px;max-width:520px;margin-bottom:26px;}
+  .shop-teaser .st-facts{display:flex;gap:30px;flex-wrap:wrap;margin-bottom:30px;}
+  .shop-teaser .st-facts b{font-family:var(--serif);font-size:26px;display:block;line-height:1.1;color:var(--ivory);}
+  .shop-teaser .st-facts span{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);}
+  .shop-teaser .st-price{font-family:var(--serif);font-size:30px;margin-bottom:24px;color:var(--ivory);}
+  .shop-teaser .st-price s{font-size:18px;color:var(--taupe);margin-inline-start:10px;}
+  .shop-teaser .st-price small{font-size:13px;color:var(--gold-soft);display:block;font-family:var(--sans);}
+  @media(max-width:980px){.shop-teaser .wrap{grid-template-columns:1fr;gap:50px;}.shop-teaser .st-cover{max-width:260px;}}
+  @media(max-width:640px){.shop-teaser{padding:70px 0;}}
 </style>
 </head>
 <body>
@@ -338,6 +357,7 @@
     <a href="#about">About</a>
     <a href="#why">Why Train With Me</a>
     <a href="#packages">Packages</a>
+    <a href="eat-well.html">Eat Well Plan</a>
   </div>
   <a class="lang-switch" href="ar.html">عربي</a>
   <a class="btn btn-primary nav-cta-mobile" href="https://cal.imeetify.com/coachbigzee/strategy-session" target="_blank" rel="noopener">Book</a>
@@ -513,6 +533,21 @@
   </div>
 </section>
 
+<!-- ============ SHOP: EAT WELL ============ -->
+<section class="shop-teaser" id="eat-well">
+  <div class="wrap">
+    <a class="st-cover reveal" href="eat-well.html"><span class="st-flag" id="stFlag" hidden>Launch offer</span><img src="assets/shop/eat-well-cover.webp" alt="Eat Well — The 4-Week Recipe Plan" loading="lazy"></a>
+    <div class="reveal">
+      <span class="eyebrow">New · The 4-Week Recipe Plan</span>
+      <h2>Eat Well<em>.</em> 28 days of food, sorted.</h2>
+      <p>Easy, affordable, Arabic-kitchen recipes from what's already in an Egyptian kitchen — calories and macros done for you. English + عربي. Get it as a PDF or order a printed copy.</p>
+      <div class="st-facts"><div><b>28</b><span>Days</span></div><div><b>84</b><span>Recipes</span></div><div><b>1,500</b><span>kcal a day</span></div></div>
+      <div class="st-price" id="stPrice">1,500 EGP</div>
+      <a class="btn btn-primary" href="eat-well.html">Get the plan</a>
+    </div>
+  </div>
+</section>
+
 <!-- ============ PROCESS ============ -->
 <section class="process" id="process">
   <div class="wrap">
@@ -569,6 +604,7 @@
         <div class="footer-col">
           <h4>Program</h4>
           <a href="#packages">Packages</a>
+          <a href="eat-well.html">Eat Well — 4-Week Recipe Plan</a>
           <a href="#process">How It Works</a>
           <a href="https://cal.imeetify.com/coachbigzee/strategy-session" target="_blank" rel="noopener">Book a Free Consultation</a>
         </div>
@@ -666,6 +702,18 @@
       currency = detected;
       renderPrices();
     }
+  })();
+</script>
+
+
+<script>
+  // Eat Well teaser: show the launch-offer price automatically (13–22 Nov 2026, Cairo time)
+  (function(){
+    var el=document.getElementById('stPrice'); if(!el) return;
+    var now=Date.now(), s=Date.parse('2026-11-13T00:00:00+02:00'), e=Date.parse('2026-11-23T00:00:00+02:00');
+    var ar=document.documentElement.lang==='ar', cur=ar?' جنيه':' EGP';
+    if(now>=s&&now<e){ el.innerHTML='1,200'+cur+'<s>1,500'+cur+'</s><small>'+(ar?'عرض الإطلاق — لمدة 10 أيام بس':'Launch offer — 10 days only')+'</small>'; document.getElementById('stFlag').hidden=false; }
+    else if(now<s){ el.innerHTML='1,500'+cur+'<small>'+(ar?'عرض الإطلاق 1,200 جنيه يبدأ الجمعة 13 نوفمبر — 10 أيام بس':'Launch offer 1,200 EGP starts Friday 13 Nov — 10 days only')+'</small>'; }
   })();
 </script>
 
