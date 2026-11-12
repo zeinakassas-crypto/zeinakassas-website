@@ -19,7 +19,7 @@ create table if not exists public.products (
 insert into public.products (id, name, price_egp, offer_egp, offer_starts, offer_ends, pdf_path)
 values (
   'eat-well',
-  'Eat Well — The 4-Week Recipe Plan',
+  'Eat Well Vol. 1 — The 4-Week Recipe Book',
   1500,
   1200,
   '2026-11-13 00:00:00+02',   -- Friday 13 Nov 2026, midnight Cairo time

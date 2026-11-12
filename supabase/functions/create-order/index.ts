@@ -97,11 +97,11 @@ Deno.serve(async (req) => {
   // Emails are best-effort: the order is saved even if email is not configured yet.
   const customerHtml = ar
     ? emailLayout(`<h2 style="margin:0 0 12px">استلمنا طلبك رقم #${order.order_no} ✅</h2>
-      <p>أهلاً ${esc(name)}، شكراً على طلب <b>Eat Well — كتيب الـ 4 أسابيع</b>.</p>
+      <p>أهلاً ${esc(name)}، شكراً على طلب <b>Eat Well Vol. 1 — كتيب الـ 4 أسابيع</b>.</p>
       <p>هنراجع إيصال الدفع ونأكد طلبك في أقرب وقت. أول ما الدفع يتأكد هيوصلك إيميل فيه الـ PDF${format === "print" ? "، وهنتواصل معاك على واتساب بتكلفة الطباعة والشحن" : ""}.</p>
       <p>المبلغ: <b>${order.amount_egp} جنيه</b></p>${button(link, "متابعة الطلب")}`, true)
     : emailLayout(`<h2 style="margin:0 0 12px">Order #${order.order_no} received ✅</h2>
-      <p>Hi ${esc(name)}, thank you for ordering <b>Eat Well — The 4-Week Recipe Plan</b>.</p>
+      <p>Hi ${esc(name)}, thank you for ordering <b>Eat Well Vol. 1 — The 4-Week Recipe Book</b>.</p>
       <p>We're reviewing your payment receipt now. As soon as payment is confirmed you'll get an email with your PDF${format === "print" ? ", and we'll message you on WhatsApp with the printing + shipping cost" : ""}.</p>
       <p>Amount: <b>${order.amount_egp} EGP</b></p>${button(link, "Track your order")}`);
 
