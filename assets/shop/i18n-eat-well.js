@@ -1,9 +1,9 @@
 // Texts for eat-well.html (English + Egyptian Arabic)
 window.ZK_I18N = {
   en: {
-    doc_title: 'Eat Well — The 4-Week Recipe Plan | Coach Bigzee',
+    doc_title: 'Eat Well Vol. 1 — The 4-Week Recipe Book | Coach Bigzee',
     nav_back: '← Back to coaching', nav_buy: 'Buy now', flag: 'Launch offer',
-    eyebrow: 'The 4-Week Recipe Plan · PDF + Printed',
+    eyebrow: 'Vol. 1 · The 4-Week Recipe Book · PDF + Printed',
     title: 'Eat Well<em>.</em> 28 days of food, sorted.',
     sub: "Easy, affordable, Arabic-kitchen recipes with a Western touch — from what's already in an Egyptian kitchen. No deep-frying, no fancy shopping. English + عربي.",
     s_days: 'Days', s_recipes: 'Recipes', s_kcal: 'kcal a day', s_protein: 'Protein a day',
@@ -56,7 +56,7 @@ window.ZK_I18N = {
     e_fields: 'Please check the highlighted fields.',
     e_network: 'Connection problem — please check your internet and try again.',
     e_setup: 'The shop is being set up — please try again shortly or message @coachbigzee on Instagram.',
-    sum_name: 'Eat Well — The 4-Week Recipe Plan', sum_plan: 'Book', sum_print: 'Printing + shipping', sum_tbd: 'via WhatsApp', sum_total: 'Pay now',
+    sum_name: 'Eat Well Vol. 1 — The 4-Week Recipe Book', sum_plan: 'Book', sum_print: 'Printing + shipping', sum_tbd: 'via WhatsApp', sum_total: 'Pay now',
     sum_note: 'Secure: your receipt is stored privately and only seen by Coach Bigzee.',
     l_code: 'Discount code', code_apply: 'Apply', code_ok: 'Code applied: −{d} EGP',
     code_invalid: "This code isn't valid.", code_expired: 'This code has expired.', code_used_up: 'This code has reached its limit.',
@@ -70,9 +70,9 @@ window.ZK_I18N = {
     q5: 'Is this a medical diet?', a5: "No. It's general healthy-eating guidance. If you're pregnant, breastfeeding, under 18 or managing a medical condition, check with your doctor first."
   },
   ar: {
-    doc_title: 'كُل صح — كتيب وصفات الـ 4 أسابيع | كوتش بيجزي',
+    doc_title: 'كُل صح ١ — كتيب وصفات الـ 4 أسابيع | كوتش بيجزي',
     nav_back: '→ رجوع للكوتشينج', nav_buy: 'اشتري دلوقتي', flag: 'عرض الإطلاق',
-    eyebrow: 'كتيب وصفات الـ 4 أسابيع · PDF + نسخة مطبوعة',
+    eyebrow: 'الجزء ١ · كتيب وصفات الـ 4 أسابيع · PDF + نسخة مطبوعة',
     title: 'كُل صح<em>.</em> أكل 28 يوم متظبط.',
     sub: 'وصفات سهلة وموفّرة من المطبخ العربي بلمسة غربية — من اللي موجود أصلاً في أي مطبخ مصري. من غير قلي ومن غير مشتريات غريبة. عربي + English.',
     s_days: 'يوم', s_recipes: 'وصفة', s_kcal: 'سعرة في اليوم', s_protein: 'بروتين في اليوم',
@@ -125,7 +125,7 @@ window.ZK_I18N = {
     e_fields: 'من فضلك راجع الخانات المعلّمة.',
     e_network: 'في مشكلة في الاتصال — اتأكد من النت وجرّب تاني.',
     e_setup: 'المتجر بيتجهز — جرّب كمان شوية أو ابعتلنا على إنستجرام @coachbigzee.',
-    sum_name: 'كُل صح — كتيب وصفات الـ 4 أسابيع', sum_plan: 'الكتيب', sum_print: 'الطباعة والشحن', sum_tbd: 'على واتساب', sum_total: 'المطلوب دلوقتي',
+    sum_name: 'كُل صح ١ — كتيب وصفات الـ 4 أسابيع', sum_plan: 'الكتيب', sum_print: 'الطباعة والشحن', sum_tbd: 'على واتساب', sum_total: 'المطلوب دلوقتي',
     sum_note: 'آمن: الإيصال بيتحفظ بشكل خاص ومحدش بيشوفه غير كوتش بيجزي.',
     l_code: 'كود الخصم', code_apply: 'تطبيق', code_ok: 'تم تطبيق الكود: خصم {d} جنيه',
     code_invalid: 'الكود ده مش صحيح.', code_expired: 'الكود ده انتهى.', code_used_up: 'الكود ده خلص عدد مرات استخدامه.',
