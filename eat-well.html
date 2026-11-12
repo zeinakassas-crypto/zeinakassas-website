@@ -41,6 +41,11 @@
   .countdown b{display:block;font-family:var(--serif);font-size:24px;line-height:1.1;}
   .countdown span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);}
   .hero-cta{display:flex;gap:14px;flex-wrap:wrap;}
+  .code-row{display:flex;gap:8px;}
+  .code-row input{flex:1;min-width:0;text-transform:uppercase;}
+  .code-row .btn{white-space:nowrap;padding-inline:20px;}
+  .field .hint.ok{color:var(--ok);}
+  .summary .line.disc span:last-child{color:var(--ok);}
   .formats-mini{margin-top:18px;font-size:13px;color:var(--taupe);}
 
   /* inside */
@@ -304,8 +309,19 @@
         <!-- 3. payment -->
         <div class="card">
           <h3><span class="num">3</span><span data-i18n="c3">Pay via InstaPay</span></h3>
+          <div class="field" data-f="discount">
+            <label for="discount_code"><span data-i18n="l_code">Discount code</span> <span class="opt" data-i18n="optional">(optional)</span></label>
+            <div class="code-row">
+              <input id="discount_code" name="discount_code" maxlength="30" autocomplete="off" autocapitalize="characters" spellcheck="false" dir="ltr">
+              <button class="btn btn-ghost" type="button" id="codeBtn" data-i18n="code_apply">Apply</button>
+            </div>
+            <div class="hint ok" id="codeOk" hidden></div>
+            <div class="err" id="codeErr"></div>
+          </div>
+          <div class="notice ok" id="freeNote" hidden data-i18n="free_note">No payment needed with this code — just place your order.</div>
+          <div class="pay-block" id="payBlock">
           <div class="pay-amount">
-            <div><div class="muted" style="font-size:12px" data-i18n="amount_to_send">Amount to send</div><b><span class="js-price">1,500</span> <span data-i18n="egp">EGP</span></b></div>
+            <div><div class="muted" style="font-size:12px" data-i18n="amount_to_send">Amount to send</div><b><span class="js-pay">1,500</span> <span data-i18n="egp">EGP</span></b></div>
             <a class="btn btn-orange" id="instapayBtn" href="https://ipn.eg/S/bigzee/instapay/03EiLL" target="_blank" rel="noopener" data-i18n="pay_btn">Open InstaPay ↗</a>
           </div>
           <ul class="pay-list">
@@ -329,6 +345,7 @@
             </label>
             <div class="err" id="receiptErr" data-i18n="e_receipt">Attaching your payment receipt is required.</div>
           </div>
+          </div>
           <div class="field">
             <label for="payment_ref"><span data-i18n="l_ref">InstaPay reference or sender name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
             <input id="payment_ref" name="payment_ref" maxlength="120">
@@ -350,7 +367,8 @@
         </div>
         <div class="line"><span data-i18n="sum_plan">Plan</span><span><span class="js-price">1,500</span> <span data-i18n="egp">EGP</span></span></div>
         <div class="line" id="sumPrintLine" hidden><span data-i18n="sum_print">Printing + shipping</span><span class="tbd" data-i18n="sum_tbd">via WhatsApp</span></div>
-        <div class="line total"><span data-i18n="sum_total">Pay now</span><span><span class="js-price">1,500</span> <span data-i18n="egp">EGP</span></span></div>
+        <div class="line disc" id="sumDiscLine" hidden><span><span data-i18n="sum_discount">Discount</span> <span class="muted" id="sumDiscCode"></span></span><span>−<span id="sumDisc">0</span> <span data-i18n="egp">EGP</span></span></div>
+        <div class="line total"><span data-i18n="sum_total">Pay now</span><span><span class="js-pay">1,500</span> <span data-i18n="egp">EGP</span></span></div>
         <p class="muted" style="font-size:12.5px;margin-top:16px" data-i18n="sum_note">Secure: your receipt is stored privately and only seen by Coach Bigzee.</p>
       </aside>
     </div>
@@ -427,6 +445,7 @@
     var now = Date.now(), st = offerState(now), price = currentPrice();
     document.querySelectorAll('.js-price').forEach(function (el) { el.textContent = fmt(price); });
     document.getElementById('priceNow').textContent = fmt(price);
+    renderPay(price);
     var was = document.getElementById('priceWas'), save = document.getElementById('saveTag'),
         line = document.getElementById('offerLine'), cd = document.getElementById('countdown'),
         flag = document.getElementById('offerFlag');
@@ -442,6 +461,50 @@
       tick(new Date(P.offer_starts).getTime());
     } else { line.textContent = ''; }
   }
+  /* ---------- discount code ---------- */
+  var disc = null, payNow = null;   // disc = applied code {code, kind, value}
+  var codeIn = document.getElementById('discount_code'), codeBtn = document.getElementById('codeBtn');
+  function renderPay(base) {
+    var off = !disc ? 0 : disc.kind === 'percent' ? Math.round(base * disc.value / 100) : Math.min(disc.value, base);
+    payNow = base - off;
+    document.querySelectorAll('.js-pay').forEach(function (el) { el.textContent = fmt(payNow); });
+    document.getElementById('sumDiscLine').hidden = !disc;
+    document.getElementById('sumDisc').textContent = fmt(off);
+    document.getElementById('sumDiscCode').textContent = disc ? disc.code : '';
+    var ok = document.getElementById('codeOk');
+    ok.hidden = !disc;
+    if (disc) ok.textContent = t('code_ok').replace('{d}', fmt(off));
+    var free = payNow === 0;
+    document.getElementById('freeNote').hidden = !free;
+    document.getElementById('payBlock').hidden = free;
+  }
+  function applyCode() {
+    var code = codeIn.value.trim().toUpperCase();
+    codeIn.value = code;
+    setInvalid('discount', false);
+    if (!code) { disc = null; renderPrice(); return; }
+    if (!C.configured()) { setInvalid('discount', true, 'e_setup'); return; }
+    codeBtn.disabled = true;
+    fetch(C.SUPABASE_URL + '/rest/v1/rpc/quote_price', {
+      method: 'POST', headers: C.headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ p_id: P.id || 'eat-well', p_code: code })
+    })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (q) {
+        if (q.code_error) { disc = null; setInvalid('discount', true, 'code_' + q.code_error); }
+        else { disc = { code: q.code, kind: q.kind, value: q.value }; }
+        renderPrice();
+      })
+      .catch(function () { setInvalid('discount', true, 'e_network'); })
+      .then(function () { codeBtn.disabled = false; });
+  }
+  codeBtn.addEventListener('click', applyCode);
+  codeIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCode(); } });
+  codeIn.addEventListener('input', function () {
+    if (disc && codeIn.value.trim().toUpperCase() !== disc.code) { disc = null; renderPrice(); }
+    setInvalid('discount', false);
+  });
+
   var cdTarget = 0;
   function tick(target) { cdTarget = target; }
   setInterval(function () {
@@ -525,7 +588,7 @@
     var f = fileInput.files[0], rMsg = 'e_receipt';
     if (f && f.size > MAX) rMsg = 'e_receipt_size';
     else if (f && !/^image\/|^application\/pdf$/.test(f.type)) rMsg = 'e_receipt_type';
-    else if (f) checks.receipt = true;
+    else if (f || payNow === 0) checks.receipt = true;
     Object.keys(checks).forEach(function (k) {
       if (only && only !== k) return;
       setInvalid(k, !checks[k], k === 'receipt' ? rMsg : null);
@@ -543,6 +606,11 @@
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     msg.classList.remove('show');
+    if (codeIn.value.trim().toUpperCase() !== (disc ? disc.code : '')) {
+      setInvalid('discount', true, 'code_pending');
+      codeIn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     if (!validate()) {
       var first = form.querySelector('.invalid');
       if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -561,6 +629,12 @@
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         if (!res.ok || !res.j.id) {
+          if (res.j && res.j.error === 'discount') {
+            disc = null; renderPrice();
+            setInvalid('discount', true, 'code_' + res.j.code_error);
+            codeIn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            throw new Error(t('code_' + res.j.code_error));
+          }
           if (res.j && res.j.fields) { res.j.fields.forEach(function (k) { setInvalid(k.replace(/_.*/, ''), true); }); }
           throw new Error((res.j && res.j.error !== 'validation' && res.j.error) || t('e_fields'));
         }

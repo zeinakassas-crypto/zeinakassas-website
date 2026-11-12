@@ -47,7 +47,20 @@
   .modal img{max-height:84vh;max-width:100%;}
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ivory);color:var(--bg);padding:12px 20px;font-size:14px;font-weight:600;border-radius:2px;display:none;z-index:200;max-width:90vw;}
   .toast.show{display:block;}
+  .codes{background:var(--sand);border:1px solid var(--hair);padding:22px;margin-bottom:22px;}
+  .codes h2{font-size:20px;margin-bottom:4px;}
+  .codes .lead{font-size:13px;color:var(--taupe);margin-bottom:16px;}
+  .code-form{display:grid;grid-template-columns:1.3fr .9fr .7fr .8fr 1fr 1.3fr auto;gap:10px;align-items:end;margin-bottom:18px;}
+  .code-form .field{margin:0;}
+  .code-form .field input,.code-form .field select{padding:11px 12px;font-size:14px;}
+  .code-form .btn{padding:12px 18px;}
+  .crow{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--hair);font-size:13.5px;}
+  .crow b{font-family:var(--serif);font-size:16px;letter-spacing:.04em;}
+  .crow .muted{color:var(--taupe);font-size:12px;}
+  .crow .cacts{display:flex;gap:6px;}
+  .st-on{color:var(--ok);} .st-off{color:var(--taupe);} .st-bad{color:var(--err);}
   .empty{color:var(--taupe);padding:40px;text-align:center;border:1px dashed var(--hair2);}
+  @media(max-width:980px){.code-form{grid-template-columns:1fr 1fr;}.code-form .btn{grid-column:1/-1;}.crow{grid-template-columns:1fr 1fr;}}
   @media(max-width:760px){.order{grid-template-columns:1fr;}.acts{min-width:0;}.stats{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
@@ -72,8 +85,25 @@
   <div id="app" hidden>
     <div class="top">
       <h1>Eat Well orders</h1>
-      <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" id="codesBtn">🏷 Discount codes</button>
+        <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+      </div>
     </div>
+    <section class="codes" id="codesPanel" hidden>
+      <h2>Discount codes</h2>
+      <p class="lead">Customers type the code at checkout and press Apply. It comes off the book price (and the launch offer price while it's on); printing + shipping is never discounted. A rejected order gives its use back.</p>
+      <form class="code-form" id="codeForm">
+        <div class="field"><label for="cCode">Code</label><input id="cCode" required maxlength="30" placeholder="e.g. FRIENDS20" style="text-transform:uppercase" autocomplete="off"></div>
+        <div class="field"><label for="cKind">Type</label><select id="cKind"><option value="percent">% off</option><option value="amount">EGP off</option></select></div>
+        <div class="field"><label for="cValue">Value</label><input id="cValue" type="number" min="1" step="1" required></div>
+        <div class="field"><label for="cMax">Max uses <span class="opt">(opt.)</span></label><input id="cMax" type="number" min="1" step="1" placeholder="∞"></div>
+        <div class="field"><label for="cEnds">Last day <span class="opt">(opt.)</span></label><input id="cEnds" type="date"></div>
+        <div class="field"><label for="cNote">Note <span class="opt">(opt.)</span></label><input id="cNote" maxlength="120" placeholder="e.g. Instagram giveaway"></div>
+        <button class="btn btn-primary" type="submit">Create code</button>
+      </form>
+      <div id="codeList"></div>
+    </section>
     <div class="stats">
       <div class="stat"><b id="stPending">0</b><span>Need review</span></div>
       <div class="stat"><b id="stPrint">0</b><span>Print to handle</span></div>
@@ -104,7 +134,7 @@
   if (!C.configured()) { document.querySelector('main .wrap').innerHTML = '<div class="empty">Set SUPABASE_URL and SUPABASE_ANON_KEY in assets/shop/shop-config.js first (see SHOP-SETUP.md).</div>'; return; }
 
   var sb = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
-  var orders = [], filter = 'pending', query = '';
+  var orders = [], codes = [], filter = 'pending', query = '';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var fmt = function (n) { return Number(n || 0).toLocaleString('en-US'); };
   function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 4500); }
@@ -135,6 +165,7 @@
     var r = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(1000);
     if (r.error) { toast('Could not load orders: ' + r.error.message); return; }
     orders = r.data || [];
+    loadCodes();
     if (!orders.length) {
       // signed in but not an admin → RLS returns nothing
       var a = await sb.from('shop_admins').select('email').limit(1);
@@ -175,7 +206,8 @@
     var when = new Date(o.created_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
     var mail = o.email_sent_at ? '<div class="mail-st ok">✉ PDF emailed ' + new Date(o.email_sent_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) + '</div>'
       : (o.email_error ? '<div class="mail-st err">✉ Email failed: ' + esc(o.email_error.slice(0, 140)) + '</div>' : '');
-    var acts = '<button class="btn btn-ghost" data-a="receipt" data-id="' + o.id + '">🧾 View receipt</button>';
+    var acts = o.receipt_path ? '<button class="btn btn-ghost" data-a="receipt" data-id="' + o.id + '">🧾 View receipt</button>'
+      : '<div class="meta" style="text-align:center">No receipt (free with code)</div>';
     if (o.status === 'pending') {
       acts += '<button class="btn btn-ok" data-a="confirm" data-id="' + o.id + '">✓ Payment confirmed — send PDF</button>' +
               '<button class="btn btn-danger" data-a="reject" data-id="' + o.id + '">✕ Reject</button>';
@@ -200,7 +232,8 @@
     return '<div class="order ' + o.status + '"><div>' +
       '<h3>#' + o.order_no + ' · ' + esc(o.customer_name) + ' <span class="badge b-' + o.status + '">' + o.status + '</span>' +
       (o.format === 'print' ? ' <span class="badge b-print">print</span>' : ' <span class="badge" style="background:rgba(244,245,242,.08)">pdf</span>') + '</h3>' +
-      '<div class="meta">' + when + ' · <b>' + fmt(o.amount_egp) + ' EGP</b> · ' + (o.lang === 'ar' ? 'Arabic' : 'English') + '<br>' +
+      '<div class="meta">' + when + ' · <b>' + fmt(o.amount_egp) + ' EGP</b>' +
+      (o.discount_code ? ' · 🏷 ' + esc(o.discount_code) + ' (−' + fmt(o.discount_egp) + ')' : '') + ' · ' + (o.lang === 'ar' ? 'Arabic' : 'English') + '<br>' +
       '✉ <a href="mailto:' + esc(o.email) + '">' + esc(o.email) + '</a>' + (o.whatsapp ? ' · 📱 ' + esc(o.whatsapp) : '') +
       (o.payment_ref ? '<br>InstaPay ref: <b>' + esc(o.payment_ref) + '</b>' : '') +
       (o.notes ? '<br>Notes: ' + esc(o.notes) : '') +
@@ -211,6 +244,57 @@
 
   document.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () { filter = b.dataset.f; render(); }; });
   $('search').oninput = function (e) { query = e.target.value.trim().toLowerCase(); render(); };
+
+  /* ---------- discount codes ---------- */
+  $('codesBtn').onclick = function () { $('codesPanel').hidden = !$('codesPanel').hidden; };
+  async function loadCodes() {
+    var r = await sb.from('discount_codes').select('*').order('created_at', { ascending: false });
+    if (r.error) { $('codeList').innerHTML = '<div class="meta">Could not load codes: ' + esc(r.error.message) + '</div>'; return; }
+    codes = r.data || [];
+    renderCodes();
+  }
+  function usesOf(code) { return orders.filter(function (o) { return o.discount_code === code && o.status !== 'rejected'; }).length; }
+  function renderCodes() {
+    if (!codes.length) { $('codeList').innerHTML = '<div class="meta" style="padding-top:12px;border-top:1px solid var(--hair)">No codes yet.</div>'; return; }
+    var now = Date.now();
+    $('codeList').innerHTML = codes.map(function (c) {
+      var used = usesOf(c.code);
+      var st = !c.active ? ['Paused', 'st-off']
+        : (c.ends_at && now >= new Date(c.ends_at).getTime()) ? ['Expired', 'st-bad']
+        : (c.max_uses && used >= c.max_uses) ? ['Used up', 'st-bad'] : ['Active', 'st-on'];
+      var last = c.ends_at ? new Date(new Date(c.ends_at).getTime() - 1).toLocaleDateString('en-GB', { dateStyle: 'medium' }) : 'No expiry';
+      return '<div class="crow"><div><b>' + esc(c.code) + '</b>' + (c.note ? '<div class="muted">' + esc(c.note) + '</div>' : '') + '</div>' +
+        '<div>' + (c.kind === 'percent' ? c.value + '% off' : fmt(c.value) + ' EGP off') + '</div>' +
+        '<div>' + used + (c.max_uses ? ' / ' + c.max_uses : '') + ' used<div class="muted">' + last + '</div></div>' +
+        '<div class="' + st[1] + '">● ' + st[0] + '</div>' +
+        '<div class="cacts"><button class="btn btn-ghost btn-sm" data-c="toggle" data-code="' + esc(c.code) + '">' + (c.active ? 'Pause' : 'Activate') + '</button>' +
+        '<button class="btn btn-danger btn-sm" data-c="delete" data-code="' + esc(c.code) + '">Delete</button></div></div>';
+    }).join('');
+  }
+  $('codeForm').onsubmit = async function (e) {
+    e.preventDefault();
+    var code = $('cCode').value.trim().toUpperCase(), kind = $('cKind').value, value = Math.round(Number($('cValue').value));
+    if (!/^[A-Z0-9_-]{2,30}$/.test(code)) { toast('Codes use letters, numbers, - or _ (2–30 characters), no spaces.'); return; }
+    if (!(value > 0) || (kind === 'percent' && value > 100)) { toast(kind === 'percent' ? 'Percent must be 1–100.' : 'Enter the EGP amount.'); return; }
+    var row = { code: code, kind: kind, value: value, note: $('cNote').value.trim() || null,
+      max_uses: $('cMax').value ? Math.round(Number($('cMax').value)) : null, ends_at: null };
+    if ($('cEnds').value) { var d = new Date($('cEnds').value + 'T00:00'); d.setDate(d.getDate() + 1); row.ends_at = d.toISOString(); }
+    var r = await sb.from('discount_codes').insert(row);
+    if (r.error) { toast(r.error.code === '23505' ? 'That code already exists.' : 'Could not create code: ' + r.error.message); return; }
+    $('codeForm').reset(); toast('Code ' + code + ' created'); loadCodes();
+  };
+  $('codeList').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-c]'); if (!b) return;
+    var c = codes.find(function (x) { return x.code === b.dataset.code; }); if (!c) return;
+    var r;
+    if (b.dataset.c === 'toggle') r = await sb.from('discount_codes').update({ active: !c.active }).eq('code', c.code);
+    else {
+      if (!confirm('Delete code ' + c.code + '? Orders that used it keep their discount.')) return;
+      r = await sb.from('discount_codes').delete().eq('code', c.code);
+    }
+    if (r.error) { toast('Error: ' + r.error.message); return; }
+    loadCodes();
+  });
 
   /* ---------- actions ---------- */
   async function act(body) {
