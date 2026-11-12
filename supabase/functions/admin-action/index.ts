@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
         <p>Hi ${esc(o.customer_name)}, your payment for order #${o.order_no} is confirmed.</p>
         ${wantsPdf ? `<p>Your copy of <b>Eat Well — The 4-Week Recipe Plan</b> is attached to this email. You can also download it any time from your order page:</p>${button(link, "Download your PDF")}` : ""}
         ${printLine}<p>Move right, eat well. 🧡<br>Coach Bigzee</p>`);
-    await sendEmail(o.email, ar ? `تم تأكيد طلبك #${o.order_no} — Eat Well` : `Your Eat Well plan is here — order #${o.order_no}`, html, attachments);
+    await sendEmail(o.email, ar ? `تم تأكيد طلبك #${o.order_no} — Eat Well` : `Your Eat Well book is here — order #${o.order_no}`, html, attachments);
   }
 
   switch (action) {
