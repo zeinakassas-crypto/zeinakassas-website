@@ -1,8 +1,8 @@
 // ZK Shop configuration — the only file you need to edit after setting up Supabase.
 // (The anon/publishable key is safe to be public: the database rules protect the data.)
 window.ZK_SHOP = {
-  SUPABASE_URL: 'https://YOUR-PROJECT-REF.supabase.co',
-  SUPABASE_ANON_KEY: 'YOUR-SUPABASE-ANON-OR-PUBLISHABLE-KEY',
+  SUPABASE_URL: 'https://ejhecenengkfqidhzdhh.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_-4iXE50xqHNdDDvfLZTlAQ_eGu8EQZG',
 
   INSTAPAY_URL: 'https://ipn.eg/S/bigzee/instapay/03EiLL',
   WHATSAPP_ADMIN: '',            // optional: your WhatsApp number in international format, e.g. 2010xxxxxxxx
