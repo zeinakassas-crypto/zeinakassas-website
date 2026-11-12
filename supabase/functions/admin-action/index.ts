@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const html = ar
       ? emailLayout(`<h2 style="margin:0 0 12px">تم تأكيد الدفع 🎉</h2>
         <p>أهلاً ${esc(o.customer_name)}، الدفع لطلب رقم #${o.order_no} اتأكد.</p>
-        ${wantsPdf ? `<p>ملف <b>Eat Well — خطة الـ 4 أسابيع</b> مرفق في الإيميل ده. وتقدر كمان تنزله في أي وقت من صفحة الطلب:</p>${button(link, "تحميل الـ PDF")}` : ""}
+        ${wantsPdf ? `<p>ملف <b>Eat Well — كتيب الـ 4 أسابيع</b> مرفق في الإيميل ده. وتقدر كمان تنزله في أي وقت من صفحة الطلب:</p>${button(link, "تحميل الـ PDF")}` : ""}
         ${printLine}<p>بالهنا والشفا، كُل صح. 🧡<br>كوتش بيجزي</p>`, true)
       : emailLayout(`<h2 style="margin:0 0 12px">Payment confirmed 🎉</h2>
         <p>Hi ${esc(o.customer_name)}, your payment for order #${o.order_no} is confirmed.</p>
