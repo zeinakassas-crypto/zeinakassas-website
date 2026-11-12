@@ -346,6 +346,37 @@
   .shop-teaser .st-price small{font-size:13px;color:var(--gold-soft);display:block;font-family:var(--sans);}
   @media(max-width:980px){.shop-teaser .wrap{grid-template-columns:1fr;gap:50px;}.shop-teaser .st-cover{max-width:260px;}}
   @media(max-width:640px){.shop-teaser{padding:70px 0;}}
+
+  /* ---------- Eat Well popup ---------- */
+  .zk-pop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .35s ease;}
+  .zk-pop[hidden]{display:none;}
+  .zk-pop.open{opacity:1;}
+  .zk-pop-card{position:relative;width:100%;max-width:760px;max-height:calc(100vh - 32px);overflow:auto;background:var(--champagne);border:1px solid var(--hairline);box-shadow:0 40px 120px rgba(0,0,0,.6);display:grid;grid-template-columns:0.85fr 1.15fr;transform:translateY(18px) scale(.98);transition:transform .35s ease;}
+  .zk-pop.open .zk-pop-card{transform:none;}
+  .zk-pop-cover{position:relative;background:var(--espresso);display:flex;align-items:center;justify-content:center;padding:34px 28px;}
+  .zk-pop-cover img{width:100%;max-width:240px;height:auto;display:block;transform:rotate(-2deg);box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px var(--hairline);}
+  html[dir=rtl] .zk-pop-cover img{transform:rotate(2deg);}
+  .zk-pop-body{padding:42px 38px 34px;display:flex;flex-direction:column;justify-content:center;}
+  .zk-pop-body .eyebrow{display:block;margin-bottom:14px;}
+  .zk-pop-body h2{font-family:var(--serif);font-size:clamp(28px,3.4vw,38px);line-height:1.08;margin:0 0 14px;color:var(--ivory);}
+  .zk-pop-body h2 em{font-style:normal;color:var(--gold);}
+  .zk-pop-body p{color:var(--taupe);font-size:15px;line-height:1.6;margin:0 0 20px;}
+  .zk-pop-price{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--ivory);margin-bottom:22px;line-height:1.2;}
+  .zk-pop-price s{font-size:17px;color:var(--taupe);margin-inline-start:10px;font-weight:400;}
+  .zk-pop-price small{display:block;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--olive);margin-top:6px;}
+  .zk-pop-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .zk-pop-later{background:none;border:0;color:var(--taupe);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:6px 0;}
+  .zk-pop-later:hover{color:var(--ivory);}
+  .zk-pop-x{position:absolute;top:12px;inset-inline-end:12px;width:40px;height:40px;border-radius:50%;border:1px solid var(--hairline);background:rgba(11,15,24,.7);color:var(--ivory);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;}
+  .zk-pop-x:hover{border-color:var(--gold);color:var(--gold);}
+  .zk-pop-flag{position:absolute;top:18px;inset-inline-start:18px;background:var(--gold);color:#fff;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 12px;z-index:1;}
+  @media(max-width:680px){
+    .zk-pop-card{grid-template-columns:1fr;}
+    .zk-pop-cover{padding:28px 20px 18px;}
+    .zk-pop-cover img{max-width:150px;}
+    .zk-pop-body{padding:22px 22px 26px;}
+  }
+  @media(prefers-reduced-motion:reduce){.zk-pop,.zk-pop-card{transition:none;}}
 </style>
 </head>
 <body>
@@ -714,6 +745,68 @@
     var ar=document.documentElement.lang==='ar', cur=ar?' جنيه':' EGP';
     if(now>=s&&now<e){ el.innerHTML='1,200'+cur+'<s>1,500'+cur+'</s><small>'+(ar?'عرض الإطلاق — لمدة 10 أيام بس':'Launch offer — 10 days only')+'</small>'; document.getElementById('stFlag').hidden=false; }
     else if(now<s){ el.innerHTML='1,500'+cur+'<small>'+(ar?'عرض الإطلاق 1,200 جنيه يبدأ الجمعة 13 نوفمبر — 10 أيام بس':'Launch offer 1,200 EGP starts Friday 13 Nov — 10 days only')+'</small>'; }
+  })();
+</script>
+
+
+<!-- ============ EAT WELL POPUP ============ -->
+<div class="zk-pop" id="zkPop" role="dialog" aria-modal="true" aria-labelledby="zkPopTitle" hidden>
+  <div class="zk-pop-card">
+    <button class="zk-pop-x" type="button" id="zkPopX" aria-label="Close">×</button>
+    <div class="zk-pop-cover"><span class="zk-pop-flag" id="zkPopFlag" hidden>Launch offer</span><img src="assets/shop/eat-well-cover.webp" alt="Eat Well Vol. 1 — The 4-Week Recipe Book" width="900" height="1271" loading="lazy"></div>
+    <div class="zk-pop-body">
+      <span class="eyebrow">New · Vol. 1 · The 4-Week Recipe Book</span>
+      <h2 id="zkPopTitle">Eat Well<em>.</em> 28 days of food, sorted.</h2>
+      <p>84 easy recipes from what's already in an Egyptian kitchen, with calories and macros done for you. English + عربي — PDF or printed copy.</p>
+      <div class="zk-pop-price" id="zkPopPrice"></div>
+      <div class="zk-pop-actions">
+        <a class="btn btn-primary" id="zkPopGo" href="https://www.zeinakassas.fit/eat-well.html">Get the book</a>
+        <button class="zk-pop-later" type="button" id="zkPopLater">Maybe later</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Eat Well popup: appears at most once a day, 3 seconds after the page opens.
+  (function(){
+    var pop=document.getElementById('zkPop'); if(!pop) return;
+    var KEY='zkEatWellPopSeen', DAY=864e5, last=0;
+    try{ last=Number(localStorage.getItem(KEY))||0; }catch(e){}
+    if(Date.now()-last<DAY || location.hash==='#eat-well') return;
+
+    var ar=document.documentElement.lang==='ar', cur=ar?' جنيه':' EGP';
+    var now=Date.now(), s=Date.parse('2026-11-13T00:00:00+02:00'), e=Date.parse('2026-11-23T00:00:00+02:00');
+    var price=document.getElementById('zkPopPrice');
+    if(now>=s&&now<e){ price.innerHTML='1,200'+cur+'<s>1,500'+cur+'</s><small>'+(ar?'عرض الإطلاق — لمدة 10 أيام بس':'Launch offer — 10 days only')+'</small>'; document.getElementById('zkPopFlag').hidden=false; }
+    else if(now<s){ price.innerHTML='1,500'+cur+'<small>'+(ar?'عرض الإطلاق 1,200 جنيه يبدأ الجمعة 13 نوفمبر':'Launch offer: 1,200 EGP from Friday 13 Nov')+'</small>'; }
+    else { price.textContent='1,500'+cur; }
+
+    var lastFocus=null;
+    function remember(){ try{ localStorage.setItem(KEY,String(Date.now())); }catch(e){} }
+    function onKey(ev){
+      if(ev.key==='Escape') close();
+      if(ev.key==='Tab'){ // keep keyboard focus inside the popup
+        var f=pop.querySelectorAll('a,button'), a=f[0], z=f[f.length-1];
+        if(ev.shiftKey&&document.activeElement===a){ ev.preventDefault(); z.focus(); }
+        else if(!ev.shiftKey&&document.activeElement===z){ ev.preventDefault(); a.focus(); }
+      }
+    }
+    function open(){
+      lastFocus=document.activeElement; remember();
+      pop.hidden=false; document.body.style.overflow='hidden';
+      requestAnimationFrame(function(){ pop.classList.add('open'); document.getElementById('zkPopX').focus(); });
+      document.addEventListener('keydown',onKey);
+    }
+    function close(){
+      pop.classList.remove('open'); document.body.style.overflow='';
+      document.removeEventListener('keydown',onKey);
+      setTimeout(function(){ pop.hidden=true; },300);
+      if(lastFocus&&lastFocus.focus) lastFocus.focus();
+    }
+    document.getElementById('zkPopX').onclick=close;
+    document.getElementById('zkPopLater').onclick=close;
+    pop.addEventListener('click',function(ev){ if(ev.target===pop) close(); });
+    setTimeout(open,3000);
   })();
 </script>
 
