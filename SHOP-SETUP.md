@@ -50,7 +50,8 @@ Printed copy only:                         - type the printing + shipping fee
 
 ### 1. Supabase (database, storage, server code), free plan is enough
 1. Create a project at https://supabase.com, e.g. "zk-shop" (region: Frankfurt / eu-central-1).
-2. **SQL Editor** → paste all of `supabase/migrations/20261112000000_shop.sql` → Run.
+2. **SQL Editor** → paste all of `supabase/migrations/20261112000000_shop.sql` → Run, then do the same with
+   `supabase/migrations/20261112120000_discount_codes.sql`.
 3. **Storage** → open the `products` bucket → upload `ZK-Eat-Well-4-Week-Recipe-Plan.pdf`
    (the name must match exactly).
 4. **Authentication → Users → Add user**: `zeina.kassas@gmail.com` + a strong password, tick "Auto confirm".
@@ -88,6 +89,16 @@ log in → **View receipt** → **✓ Payment confirmed — send PDF** → check
 - If an email ever fails, the order stays confirmed, the customer can still download from their order page, and you can press **↻ Resend PDF email**.
 - **Printed copy:** enter the fee → **Save & send on WhatsApp** (opens WhatsApp with the message ready) →
   when they pay, **Fee paid** → after delivery, **Shipped**.
+
+## Discount codes
+**admin.html → 🏷 Discount codes**: type a code (e.g. `FRIENDS20`), choose **% off** or **EGP off**, and optionally a
+maximum number of uses and a last day → **Create code**. Use **Pause** / **Activate** to switch it off and on, or **Delete** it.
+- Customers type the code at checkout and press **Apply**; the amount to send on InstaPay updates straight away.
+- The discount comes off the book price (and off the launch offer price while it's on). Printing + shipping is never discounted.
+- A 100% code makes the order free: no payment or receipt needed, you just confirm it in admin.html.
+- Uses are counted per order; a rejected order gives its use back. Each order card shows the code and the discount.
+- The database (`supabase/migrations/20261112120000_discount_codes.sql`) checks every code again when the order is placed,
+  so nobody can invent a discount from their browser.
 
 ## Changing the price or offer later
 Supabase → Table Editor → `products` → edit `price_egp`, `offer_egp`, `offer_starts`, `offer_ends`.
