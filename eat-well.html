@@ -41,6 +41,9 @@
   .countdown b{display:block;font-family:var(--serif);font-size:24px;line-height:1.1;}
   .countdown span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);}
   .hero-cta{display:flex;gap:14px;flex-wrap:wrap;}
+  .pay-opts{margin-bottom:22px;}
+  .format-opt.off{opacity:.45;cursor:not-allowed;}
+  .format-opt .abroad{color:var(--orange);}
   .code-row{display:flex;gap:8px;}
   .code-row input{flex:1;min-width:0;text-transform:uppercase;}
   .code-row .btn{white-space:nowrap;padding-inline:20px;}
@@ -196,6 +199,7 @@
         <a class="btn btn-primary" href="#checkout" data-i18n="cta_buy">Get the book</a>
         <a class="btn btn-ghost" href="#inside" data-i18n="cta_inside">See inside</a>
       </div>
+      <p class="formats-mini" id="usdLine"></p>
       <p class="formats-mini" data-i18n="formats_mini">Instant PDF after payment is confirmed — or order a printed copy delivered to your door.</p>
     </div>
   </div>
@@ -258,13 +262,14 @@
               <input type="radio" name="format" value="pdf" checked>
               <div class="t"><span data-i18n="f_pdf">Digital PDF</span><span class="dot"></span></div>
               <p data-i18n="f_pdf_p">Emailed to you + download from your order page after payment is confirmed.</p>
-              <div class="pr"><span class="js-price">1,500</span> <small data-i18n="egp">EGP</small></div>
+              <div class="pr"><span class="js-price">1,500</span> <small class="js-cur">EGP</small></div>
             </label>
-            <label class="format-opt" data-format="print">
+            <label class="format-opt" data-format="print" id="printOpt">
               <input type="radio" name="format" value="print">
               <div class="t"><span data-i18n="f_print">Printed copy</span><span class="dot"></span></div>
               <p data-i18n="f_print_p">Printed &amp; delivered to your address. Printing + shipping cost is calculated for your address and sent to you on WhatsApp.</p>
-              <div class="pr"><span class="js-price">1,500</span> <small data-i18n="plus_print">EGP + printing &amp; shipping</small></div>
+              <p class="abroad" data-i18n="print_abroad" hidden>Not available with PayPal — printed copies ship within Egypt only.</p>
+              <div class="pr"><span class="js-price-egp">1,500</span> <small data-i18n="plus_print">EGP + printing &amp; shipping</small></div>
             </label>
           </div>
         </div>
@@ -308,7 +313,19 @@
 
         <!-- 3. payment -->
         <div class="card">
-          <h3><span class="num">3</span><span data-i18n="c3">Pay via InstaPay</span></h3>
+          <h3><span class="num">3</span><span data-i18n="c3">Payment</span></h3>
+          <div class="format-opts pay-opts">
+            <label class="format-opt sel" data-method="instapay">
+              <input type="radio" name="payment_method" value="instapay" checked>
+              <div class="t"><span data-i18n="m_instapay">InstaPay</span><span class="dot"></span></div>
+              <p data-i18n="m_instapay_p">In Egypt · pay in EGP</p>
+            </label>
+            <label class="format-opt" data-method="paypal">
+              <input type="radio" name="payment_method" value="paypal">
+              <div class="t"><span data-i18n="m_paypal">PayPal</span><span class="dot"></span></div>
+              <p data-i18n="m_paypal_p">Outside Egypt · pay in USD · PDF only</p>
+            </label>
+          </div>
           <div class="field" data-f="discount">
             <label for="discount_code"><span data-i18n="l_code">Discount code</span> <span class="opt" data-i18n="optional">(optional)</span></label>
             <div class="code-row">
@@ -321,11 +338,11 @@
           <div class="notice ok" id="freeNote" hidden data-i18n="free_note">No payment needed with this code — just place your order.</div>
           <div class="pay-block" id="payBlock">
           <div class="pay-amount">
-            <div><div class="muted" style="font-size:12px" data-i18n="amount_to_send">Amount to send</div><b><span class="js-pay">1,500</span> <span data-i18n="egp">EGP</span></b></div>
-            <a class="btn btn-orange" id="instapayBtn" href="https://ipn.eg/S/bigzee/instapay/03EiLL" target="_blank" rel="noopener" data-i18n="pay_btn">Open InstaPay ↗</a>
+            <div><div class="muted" style="font-size:12px" data-i18n="amount_to_send">Amount to send</div><b><span class="js-pay">1,500</span> <span class="js-cur">EGP</span></b></div>
+            <a class="btn btn-orange" id="payBtn" href="https://ipn.eg/S/bigzee/instapay/03EiLL" target="_blank" rel="noopener">Open InstaPay ↗</a>
           </div>
           <ul class="pay-list">
-            <li data-i18n="pay1">Tap “Open InstaPay” and send the exact amount above.</li>
+            <li id="payStep1">Tap “Open InstaPay” and send the exact amount above.</li>
             <li data-i18n="pay2">Take a screenshot of the successful transfer.</li>
             <li data-i18n="pay3">Come back to this page and upload it below.</li>
           </ul>
@@ -347,7 +364,7 @@
           </div>
           </div>
           <div class="field">
-            <label for="payment_ref"><span data-i18n="l_ref">InstaPay reference or sender name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
+            <label for="payment_ref"><span id="refLabel">InstaPay reference or sender name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
             <input id="payment_ref" name="payment_ref" maxlength="120">
           </div>
           <div class="field">
@@ -365,10 +382,10 @@
           <img src="assets/shop/eat-well-cover.webp" alt="">
           <div><strong data-i18n="sum_name">Eat Well Vol. 1 — The 4-Week Recipe Book</strong><div class="muted" style="font-size:12.5px" id="sumFormat" data-i18n="f_pdf">Digital PDF</div></div>
         </div>
-        <div class="line"><span data-i18n="sum_plan">Book</span><span><span class="js-price">1,500</span> <span data-i18n="egp">EGP</span></span></div>
+        <div class="line"><span data-i18n="sum_plan">Book</span><span><span class="js-price">1,500</span> <span class="js-cur">EGP</span></span></div>
         <div class="line" id="sumPrintLine" hidden><span data-i18n="sum_print">Printing + shipping</span><span class="tbd" data-i18n="sum_tbd">via WhatsApp</span></div>
-        <div class="line disc" id="sumDiscLine" hidden><span><span data-i18n="sum_discount">Discount</span> <span class="muted" id="sumDiscCode"></span></span><span>−<span id="sumDisc">0</span> <span data-i18n="egp">EGP</span></span></div>
-        <div class="line total"><span data-i18n="sum_total">Pay now</span><span><span class="js-pay">1,500</span> <span data-i18n="egp">EGP</span></span></div>
+        <div class="line disc" id="sumDiscLine" hidden><span><span data-i18n="sum_discount">Discount</span> <span class="muted" id="sumDiscCode"></span></span><span>−<span id="sumDisc">0</span> <span class="js-cur">EGP</span></span></div>
+        <div class="line total"><span data-i18n="sum_total">Pay now</span><span><span class="js-pay">1,500</span> <span class="js-cur">EGP</span></span></div>
         <p class="muted" style="font-size:12.5px;margin-top:16px" data-i18n="sum_note">Secure: your receipt is stored privately and only seen by Coach Bigzee.</p>
       </aside>
     </div>
@@ -441,11 +458,20 @@
     return 'ended';
   }
   function currentPrice() { return offerState(Date.now()) === 'live' ? P.offer_egp : P.price_egp; }
+  function currentUsd() { return Number(offerState(Date.now()) === 'live' && P.offer_usd ? P.offer_usd : P.price_usd); }
+  function isPayPal() { var r = document.querySelector('input[name=payment_method]:checked'); return !!r && r.value === 'paypal'; }
+  var r2 = function (n) { return Math.round(n * 100) / 100; };
+  var fmtUsd = function (n) { return n % 1 ? n.toFixed(2) : String(n); };
+  function money(n) { return isPayPal() ? fmtUsd(n) : fmt(n); }
   function renderPrice() {
-    var now = Date.now(), st = offerState(now), price = currentPrice();
-    document.querySelectorAll('.js-price').forEach(function (el) { el.textContent = fmt(price); });
+    var now = Date.now(), st = offerState(now), price = currentPrice(), usd = currentUsd(), pp = isPayPal();
+    var base = pp ? usd : price;
+    document.querySelectorAll('.js-price').forEach(function (el) { el.textContent = money(base); });
+    document.querySelectorAll('.js-price-egp').forEach(function (el) { el.textContent = fmt(price); });
+    document.querySelectorAll('.js-cur').forEach(function (el) { el.textContent = t(pp ? 'usd' : 'egp'); });
     document.getElementById('priceNow').textContent = fmt(price);
-    renderPay(price);
+    document.getElementById('usdLine').textContent = usd ? t('usd_line').replace('{p}', '$' + fmtUsd(usd)) : '';
+    renderPay(base, price);
     var was = document.getElementById('priceWas'), save = document.getElementById('saveTag'),
         line = document.getElementById('offerLine'), cd = document.getElementById('countdown'),
         flag = document.getElementById('offerFlag');
@@ -464,16 +490,23 @@
   /* ---------- discount code ---------- */
   var disc = null, payNow = null;   // disc = applied code {code, kind, value}
   var codeIn = document.getElementById('discount_code'), codeBtn = document.getElementById('codeBtn');
-  function renderPay(base) {
-    var off = !disc ? 0 : disc.kind === 'percent' ? Math.round(base * disc.value / 100) : Math.min(disc.value, base);
-    payNow = base - off;
-    document.querySelectorAll('.js-pay').forEach(function (el) { el.textContent = fmt(payNow); });
+  function renderPay(base, baseEgp) {
+    var pp = isPayPal(), off = 0;
+    if (disc && pp) off = disc.kind === 'percent' ? r2(base * disc.value / 100) : r2(base * Math.min(disc.value, baseEgp) / baseEgp);
+    else if (disc) off = disc.kind === 'percent' ? Math.round(base * disc.value / 100) : Math.min(disc.value, base);
+    payNow = r2(base - off);
+    document.querySelectorAll('.js-pay').forEach(function (el) { el.textContent = money(payNow); });
     document.getElementById('sumDiscLine').hidden = !disc;
-    document.getElementById('sumDisc').textContent = fmt(off);
+    document.getElementById('sumDisc').textContent = money(off);
     document.getElementById('sumDiscCode').textContent = disc ? disc.code : '';
     var ok = document.getElementById('codeOk');
     ok.hidden = !disc;
-    if (disc) ok.textContent = t('code_ok').replace('{d}', fmt(off));
+    if (disc) ok.textContent = t('code_ok').replace('{d}', money(off)).replace(t('egp'), t(pp ? 'usd' : 'egp'));
+    var btn = document.getElementById('payBtn');
+    btn.textContent = t(pp ? 'pay_btn_pp' : 'pay_btn');
+    btn.href = pp ? C.PAYPAL_URL.replace(/\/$/, '') + '/' + fmtUsd(payNow) + 'USD' : C.INSTAPAY_URL;
+    document.getElementById('payStep1').textContent = t(pp ? 'pay1_pp' : 'pay1');
+    document.getElementById('refLabel').textContent = t(pp ? 'l_ref_pp' : 'l_ref');
     var free = payNow === 0;
     document.getElementById('freeNote').hidden = !free;
     document.getElementById('payBlock').hidden = free;
@@ -487,7 +520,7 @@
     codeBtn.disabled = true;
     fetch(C.SUPABASE_URL + '/rest/v1/rpc/quote_price', {
       method: 'POST', headers: C.headers({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_id: P.id || 'eat-well', p_code: code })
+      body: JSON.stringify({ p_id: P.id || 'eat-well', p_code: code, p_currency: isPayPal() ? 'USD' : 'EGP' })
     })
       .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
       .then(function (q) {
@@ -519,7 +552,7 @@
 
   // authoritative price from the database (falls back to config values)
   if (C.configured()) {
-    fetch(C.SUPABASE_URL + '/rest/v1/products?id=eat-well&select=price_egp,offer_egp,offer_starts,offer_ends', { headers: C.headers() })
+    fetch(C.SUPABASE_URL + '/rest/v1/products?id=eat-well&select=price_egp,offer_egp,price_usd,offer_usd,offer_starts,offer_ends', { headers: C.headers() })
       .then(function (r) { return r.ok ? r.json() : []; })
       .then(function (rows) { if (rows && rows[0]) { Object.assign(P, rows[0]); renderPrice(); } })
       .catch(function () {});
@@ -534,12 +567,11 @@
 
   /* ---------- form ---------- */
   var form = document.getElementById('orderForm');
-  document.getElementById('instapayBtn').href = C.INSTAPAY_URL;
 
   function selectedFormat() { return form.querySelector('input[name=format]:checked').value; }
   function syncFormat() {
     var f = selectedFormat(), isPrint = f === 'print';
-    document.querySelectorAll('.format-opt').forEach(function (o) { o.classList.toggle('sel', o.dataset.format === f); });
+    document.querySelectorAll('.format-opt[data-format]').forEach(function (o) { o.classList.toggle('sel', o.dataset.format === f); });
     document.getElementById('printFields').classList.toggle('show', isPrint);
     document.getElementById('waReq').hidden = !isPrint;
     document.getElementById('waOpt').hidden = isPrint;
@@ -548,6 +580,18 @@
     document.getElementById('sumFormat').textContent = t(isPrint ? 'f_print' : 'f_pdf');
   }
   form.querySelectorAll('input[name=format]').forEach(function (r) { r.addEventListener('change', syncFormat); });
+
+  // payment method: PayPal (outside Egypt) is USD and PDF only
+  function syncMethod() {
+    var pp = isPayPal(), printOpt = document.getElementById('printOpt'), printRadio = printOpt.querySelector('input');
+    document.querySelectorAll('.format-opt[data-method]').forEach(function (o) { o.classList.toggle('sel', o.dataset.method === (pp ? 'paypal' : 'instapay')); });
+    if (pp && printRadio.checked) form.querySelector('input[name=format][value=pdf]').checked = true;
+    printRadio.disabled = pp;
+    printOpt.classList.toggle('off', pp);
+    printOpt.querySelector('.abroad').hidden = !pp;
+    syncFormat(); renderPrice();
+  }
+  form.querySelectorAll('input[name=payment_method]').forEach(function (r) { r.addEventListener('change', syncMethod); });
 
   // receipt upload
   var fileInput = document.getElementById('receipt'), drop = document.getElementById('drop');
