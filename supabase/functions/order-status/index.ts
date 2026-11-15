@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
   const db = adminClient();
   const { data: o } = await db.from("orders")
-    .select("id, order_no, access_token, created_at, format, amount_egp, customer_name, status, reject_reason, print_status, print_fee_egp, download_count, product_id, products(name, pdf_path)")
+    .select("id, order_no, access_token, created_at, format, amount_egp, amount_usd, currency, payment_method, customer_name, status, reject_reason, print_status, print_fee_egp, download_count, product_id, products(name, pdf_path)")
     .eq("id", id).maybeSingle();
 
   // constant-ish comparison; never reveal whether the id exists
@@ -25,7 +25,8 @@ Deno.serve(async (req) => {
   // deno-lint-ignore no-explicit-any
   const product = (o as any).products as { name: string; pdf_path: string };
   const result: Record<string, unknown> = {
-    order_no: o.order_no, created_at: o.created_at, format: o.format, amount: o.amount_egp,
+    order_no: o.order_no, created_at: o.created_at, format: o.format,
+    amount: o.currency === "USD" ? Number(o.amount_usd) : o.amount_egp, currency: o.currency, payment_method: o.payment_method,
     name: o.customer_name, status: o.status, reject_reason: o.reject_reason,
     print_status: o.print_status, print_fee: o.print_fee_egp, product: product?.name,
   };

@@ -90,6 +90,15 @@ log in → **View receipt** → **✓ Payment confirmed — send PDF** → check
 - **Printed copy:** enter the fee → **Save & send on WhatsApp** (opens WhatsApp with the message ready) →
   when they pay, **Fee paid** → after delivery, **Shipped**.
 
+## PayPal (buyers outside Egypt)
+At checkout, step 3 has two choices: **InstaPay** (in Egypt, EGP) and **PayPal** (outside Egypt, US dollars, PDF only).
+- PayPal price: **$35**, launch offer **$28** (same dates as the EGP offer). Edit `price_usd` / `offer_usd` in the `products` table.
+- "Open PayPal" goes to `paypal.me/CoachBigZee/<amount>USD`, so the amount is filled in for the buyer.
+- The buyer uploads a screenshot like InstaPay buyers do; you check it against PayPal and confirm in admin.html as usual.
+  PayPal orders show the dollar amount and "via PayPal" on the order card.
+- Discount codes work with PayPal too: a % code takes the same %, an EGP code takes the same share of the dollar price.
+- Database: `supabase/migrations/20261115000000_paypal.sql`.
+
 ## Discount codes
 **admin.html → 🏷 Discount codes**: type a code (e.g. `FRIENDS20`), choose **% off** or **EGP off**, and optionally a
 maximum number of uses and a last day → **Create code**. Use **Pause** / **Activate** to switch it off and on, or **Delete** it.

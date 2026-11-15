@@ -108,7 +108,7 @@
       <div class="stat"><b id="stPending">0</b><span>Need review</span></div>
       <div class="stat"><b id="stPrint">0</b><span>Print to handle</span></div>
       <div class="stat"><b id="stPaid">0</b><span>Paid orders</span></div>
-      <div class="stat"><b id="stRev">0</b><span>Confirmed EGP</span></div>
+      <div class="stat"><b id="stRev">0</b><span>Confirmed revenue</span></div>
     </div>
     <div class="tabs" id="tabs">
       <button class="tab active" data-f="pending">Need review<span class="c"></span></button>
@@ -176,6 +176,7 @@
   $('refreshBtn').onclick = load;
   setInterval(function () { if (!$('app').hidden && document.visibilityState === 'visible') load(); }, 60000);
 
+  function amountOf(o) { return o.currency === 'USD' ? '$' + Number(o.amount_usd).toFixed(2).replace(/\.00$/, '') : fmt(o.amount_egp) + ' EGP'; }
   function needsPrint(o) { return o.format === 'print' && o.status === 'paid' && o.print_status !== 'shipped'; }
   function matches(o) {
     if (filter === 'pending' && o.status !== 'pending') return false;
@@ -192,7 +193,9 @@
     $('stPending').textContent = pending.length;
     $('stPrint').textContent = orders.filter(needsPrint).length;
     $('stPaid').textContent = paid.length;
-    $('stRev').textContent = fmt(paid.reduce(function (s, o) { return s + o.amount_egp; }, 0));
+    var egp = paid.filter(function (o) { return o.currency !== 'USD'; }).reduce(function (s, o) { return s + o.amount_egp; }, 0);
+    var usd = paid.filter(function (o) { return o.currency === 'USD'; }).reduce(function (s, o) { return s + Number(o.amount_usd); }, 0);
+    $('stRev').textContent = fmt(egp) + ' EGP' + (usd ? ' + $' + usd.toFixed(2).replace(/\.00$/, '') : '');
     var counts = { pending: pending.length, print: orders.filter(function (o) { return o.format === 'print'; }).length, paid: paid.length,
       rejected: orders.filter(function (o) { return o.status === 'rejected'; }).length, all: orders.length };
     document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.f === filter); b.querySelector('.c').textContent = '(' + counts[b.dataset.f] + ')'; });
@@ -232,7 +235,7 @@
     return '<div class="order ' + o.status + '"><div>' +
       '<h3>#' + o.order_no + ' · ' + esc(o.customer_name) + ' <span class="badge b-' + o.status + '">' + o.status + '</span>' +
       (o.format === 'print' ? ' <span class="badge b-print">print</span>' : ' <span class="badge" style="background:rgba(244,245,242,.08)">pdf</span>') + '</h3>' +
-      '<div class="meta">' + when + ' · <b>' + fmt(o.amount_egp) + ' EGP</b>' +
+      '<div class="meta">' + when + ' · <b>' + amountOf(o) + '</b>' + (o.currency === 'USD' ? ' via PayPal' : '') +
       (o.discount_code ? ' · 🏷 ' + esc(o.discount_code) + ' (−' + fmt(o.discount_egp) + ')' : '') + ' · ' + (o.lang === 'ar' ? 'Arabic' : 'English') + '<br>' +
       '✉ <a href="mailto:' + esc(o.email) + '">' + esc(o.email) + '</a>' + (o.whatsapp ? ' · 📱 ' + esc(o.whatsapp) : '') +
       (o.payment_ref ? '<br>InstaPay ref: <b>' + esc(o.payment_ref) + '</b>' : '') +
@@ -317,7 +320,7 @@
         if (/\.pdf$/i.test(o.receipt_path)) { window.open(r.url, '_blank'); return; }
         $('modalImg').src = r.url; $('modalOpen').href = r.url; $('modal').classList.add('open'); return;
       }
-      if (a === 'confirm' && !confirm('Confirm payment of ' + fmt(o.amount_egp) + ' EGP from ' + o.customer_name + '?\n\nThe PDF will be emailed to ' + o.email + ' automatically.')) return;
+      if (a === 'confirm' && !confirm('Confirm payment of ' + amountOf(o) + (o.currency === 'USD' ? ' (PayPal)' : '') + ' from ' + o.customer_name + '?\n\nThe PDF will be emailed to ' + o.email + ' automatically.')) return;
       if (a === 'resend' && !confirm('Send the PDF email again to ' + o.email + '?')) return;
       var reason;
       if (a === 'reject') { reason = prompt('Reason (sent to the customer, optional):', 'Payment not found / amount does not match'); if (reason === null) return; }

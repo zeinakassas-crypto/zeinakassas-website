@@ -34,9 +34,11 @@ Deno.serve(async (req) => {
   const lang = str("lang") === "ar" ? "ar" : "en";
   const receipt = form.get("receipt");
   const discountCode = str("discount_code", 40);
+  const method = str("payment_method") === "paypal" ? "paypal" : "instapay";
+  const usd = method === "paypal";
 
   const errors: string[] = [];
-  if (!["pdf", "print"].includes(format)) errors.push("format");
+  if (!["pdf", "print"].includes(format) || (usd && format !== "pdf")) errors.push("format"); // PayPal (abroad) = PDF only
   if (name.length < 2) errors.push("name");
   if (!EMAIL_RE.test(email)) errors.push("email");
   const waDigits = whatsapp.replace(/[^\d]/g, "");
@@ -47,10 +49,13 @@ Deno.serve(async (req) => {
   const db = adminClient();
 
   // Price (and discount) are always decided here, never by the browser.
-  const { data: quote, error: priceErr } = await db.rpc("quote_price", { p_id: productId, p_code: discountCode || null });
+  const { data: quote, error: priceErr } = await db.rpc("quote_price", {
+    p_id: productId, p_code: discountCode || null, p_currency: usd ? "USD" : "EGP",
+  });
   if (priceErr || !quote || quote.error) return json({ error: "Product not available" }, 400);
   if (quote.code_error) return json({ error: "discount", code_error: quote.code_error, fields: ["discount_code"] }, 400);
-  const price: number = quote.total;
+  const price: number = quote.total;                 // in the order's currency
+  const money = (n: number, ar = false) => usd ? `$${Number(n).toFixed(2).replace(/\.00$/, "")}` : `${n} ${ar ? "جنيه" : "EGP"}`;
 
   // A receipt is required unless a 100% code makes the order free.
   const hasReceipt = receipt instanceof File && receipt.size > 0;
@@ -71,9 +76,12 @@ Deno.serve(async (req) => {
   const { data: order, error } = await db.from("orders").insert({
     product_id: productId,
     format,
-    amount_egp: price,
+    amount_egp: quote.total_egp,
+    amount_usd: usd ? price : null,
+    currency: usd ? "USD" : "EGP",
+    payment_method: method,
     discount_code: quote.code ?? null,
-    discount_egp: quote.discount ?? 0,
+    discount_egp: quote.discount_egp ?? 0,
     customer_name: name,
     email,
     whatsapp: whatsapp || null,
@@ -84,7 +92,7 @@ Deno.serve(async (req) => {
     lang,
     receipt_path: receiptPath || null,
     print_status: format === "print" ? "awaiting_quote" : null,
-  }).select("id, order_no, access_token, amount_egp").single();
+  }).select("id, order_no, access_token").single();
 
   if (error || !order) {
     if (receiptPath) await db.storage.from("receipts").remove([receiptPath]);
@@ -99,23 +107,23 @@ Deno.serve(async (req) => {
     ? emailLayout(`<h2 style="margin:0 0 12px">استلمنا طلبك رقم #${order.order_no} ✅</h2>
       <p>أهلاً ${esc(name)}، شكراً على طلب <b>Eat Well Vol. 1 — كتيب الـ 4 أسابيع</b>.</p>
       <p>هنراجع إيصال الدفع ونأكد طلبك في أقرب وقت. أول ما الدفع يتأكد هيوصلك إيميل فيه الـ PDF${format === "print" ? "، وهنتواصل معاك على واتساب بتكلفة الطباعة والشحن" : ""}.</p>
-      <p>المبلغ: <b>${order.amount_egp} جنيه</b></p>${button(link, "متابعة الطلب")}`, true)
+      <p>المبلغ: <b>${money(price, true)}</b></p>${button(link, "متابعة الطلب")}`, true)
     : emailLayout(`<h2 style="margin:0 0 12px">Order #${order.order_no} received ✅</h2>
       <p>Hi ${esc(name)}, thank you for ordering <b>Eat Well Vol. 1 — The 4-Week Recipe Book</b>.</p>
       <p>We're reviewing your payment receipt now. As soon as payment is confirmed you'll get an email with your PDF${format === "print" ? ", and we'll message you on WhatsApp with the printing + shipping cost" : ""}.</p>
-      <p>Amount: <b>${order.amount_egp} EGP</b></p>${button(link, "Track your order")}`);
+      <p>Amount: <b>${money(price)}</b></p>${button(link, "Track your order")}`);
 
   const adminHtml = emailLayout(`<h2 style="margin:0 0 12px">New order #${order.order_no} — ${format === "print" ? "PRINTED COPY" : "PDF"}</h2>
     <p><b>${esc(name)}</b> · ${esc(email)}${whatsapp ? ` · WhatsApp ${esc(whatsapp)}` : ""}</p>
-    <p>Amount: <b>${order.amount_egp} EGP</b>${quote.code ? ` · Code ${esc(quote.code)} (−${quote.discount} EGP)` : ""}${paymentRef ? ` · Ref: ${esc(paymentRef)}` : ""}</p>
+    <p>Amount: <b>${money(price)}</b> via ${usd ? "PayPal" : "InstaPay"}${quote.code ? ` · Code ${esc(quote.code)} (−${money(quote.discount)})` : ""}${paymentRef ? ` · Ref: ${esc(paymentRef)}` : ""}</p>
     ${format === "print" ? `<p>Ship to: ${esc(city)} — ${esc(address)}</p>` : ""}
     ${notes ? `<p>Notes: ${esc(notes)}</p>` : ""}
     ${button(`${SITE_URL}/admin.html`, "Review receipt & confirm")}`);
 
   await Promise.allSettled([
     sendEmail(email, ar ? `استلمنا طلبك #${order.order_no} — Eat Well` : `Order #${order.order_no} received — Eat Well`, customerHtml),
-    ADMIN_EMAIL ? sendEmail(ADMIN_EMAIL, `🛒 New order #${order.order_no} (${format.toUpperCase()}) — ${order.amount_egp} EGP`, adminHtml) : Promise.resolve(),
+    ADMIN_EMAIL ? sendEmail(ADMIN_EMAIL, `🛒 New order #${order.order_no} (${format.toUpperCase()}${usd ? ", PayPal" : ""}) — ${money(price)}`, adminHtml) : Promise.resolve(),
   ]);
 
-  return json({ ok: true, id: order.id, token: order.access_token, order_no: order.order_no, amount: order.amount_egp });
+  return json({ ok: true, id: order.id, token: order.access_token, order_no: order.order_no, amount: price, currency: usd ? "USD" : "EGP" });
 });
