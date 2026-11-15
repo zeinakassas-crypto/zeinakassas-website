@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     if (o.status !== "paid") return json({ ...result, error: "not_paid" }, 403);
     if (o.download_count >= MAX_DOWNLOADS) return json({ ...result, error: "download_limit" }, 429);
     const { data: signed, error } = await db.storage.from("products")
-      .createSignedUrl(product.pdf_path, 600, { download: "ZK-Eat-Well-4-Week-Recipe-Plan.pdf" });
+      .createSignedUrl(product.pdf_path, 600, { download: "ZK-Eat-Well-Vol-1.pdf" });
     if (error || !signed) return json({ ...result, error: "file_unavailable" }, 500);
     await db.from("orders").update({ download_count: o.download_count + 1 }).eq("id", o.id);
     result.url = signed.signedUrl;
