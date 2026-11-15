@@ -124,7 +124,7 @@
       steps += step(t('p3'), ps >= 3 ? 'done' : (ps === 2 ? 'now' : ''));
     }
     box.innerHTML =
-      '<div class="head"><img src="assets/shop/eat-well-cover.webp" alt=""><div><strong>' + esc(data.product || 'Eat Well') + '</strong>' +
+      '<div class="head"><img src="assets/shop/eat-well-cover-v2.webp" alt=""><div><strong>' + esc(data.product || 'Eat Well') + '</strong>' +
       '<small>' + t('order') + ' #' + esc(data.order_no) + ' · ' + esc(new Date(data.created_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB')) + '</small></div></div>' +
       badge + '<h1>' + title + '</h1><p>' + p + '</p>' +
       (rej && data.reject_reason ? '<div class="notice err" style="margin-bottom:20px">' + t('reason') + ': ' + esc(data.reject_reason) + '</div>' : '') +
