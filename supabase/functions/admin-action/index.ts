@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     if (wantsPdf) {
       const { data: file, error } = await db.storage.from("products").download(o.products.pdf_path);
       if (error || !file) throw new Error("PDF file missing in storage bucket 'products'");
-      attachments = [{ filename: "ZK-Eat-Well-4-Week-Recipe-Plan.pdf", content: bytesToBase64(new Uint8Array(await file.arrayBuffer())) }];
+      attachments = [{ filename: "ZK-Eat-Well-Vol-1.pdf", content: bytesToBase64(new Uint8Array(await file.arrayBuffer())) }];
     }
     const printLine = o.format === "print"
       ? (ar ? `<p>بخصوص النسخة المطبوعة: هنتواصل معاك على واتساب (${esc(o.whatsapp)}) بتكلفة الطباعة والشحن لعنوانك.</p>`
