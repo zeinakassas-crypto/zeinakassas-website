@@ -24,7 +24,7 @@ values (
   1200,
   '2026-11-13 00:00:00+02',   -- Friday 13 Nov 2026, midnight Cairo time
   '2026-11-23 00:00:00+02',   -- 10 full days: 13 → 22 Nov inclusive
-  'ZK-Eat-Well-4-Week-Recipes.pdf'
+  'ZK-Eat-Well-4-Week-Recipe-Plan.pdf'
 )
 on conflict (id) do update set
   name = excluded.name, price_egp = excluded.price_egp, offer_egp = excluded.offer_egp,

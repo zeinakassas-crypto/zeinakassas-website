@@ -52,7 +52,7 @@ Printed copy only:                         - type the printing + shipping fee
 1. Create a project at https://supabase.com, e.g. "zk-shop" (region: Frankfurt / eu-central-1).
 2. **SQL Editor** → paste all of `supabase/migrations/20261112000000_shop.sql` → Run, then do the same with
    `supabase/migrations/20261112120000_discount_codes.sql`.
-3. **Storage** → open the `products` bucket → upload `ZK-Eat-Well-4-Week-Recipes.pdf`
+3. **Storage** → open the `products` bucket → upload `ZK-Eat-Well-4-Week-Recipe-Plan.pdf`
    (the name must match exactly).
 4. **Authentication → Users → Add user**: `zeina.kassas@gmail.com` + a strong password, tick "Auto confirm".
    Then **Authentication → Sign In / Providers** → turn **off** "Allow new users to sign up".
