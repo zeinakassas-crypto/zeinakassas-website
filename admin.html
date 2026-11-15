@@ -176,7 +176,7 @@
   $('refreshBtn').onclick = load;
   setInterval(function () { if (!$('app').hidden && document.visibilityState === 'visible') load(); }, 60000);
 
-  function amountOf(o) { return o.currency === 'USD' ? '$' + Number(o.amount_usd) : fmt(o.amount_egp) + ' EGP'; }
+  function amountOf(o) { return o.currency === 'USD' ? '$' + Number(o.amount_usd).toFixed(2).replace(/\.00$/, '') : fmt(o.amount_egp) + ' EGP'; }
   function needsPrint(o) { return o.format === 'print' && o.status === 'paid' && o.print_status !== 'shipped'; }
   function matches(o) {
     if (filter === 'pending' && o.status !== 'pending') return false;
@@ -195,7 +195,7 @@
     $('stPaid').textContent = paid.length;
     var egp = paid.filter(function (o) { return o.currency !== 'USD'; }).reduce(function (s, o) { return s + o.amount_egp; }, 0);
     var usd = paid.filter(function (o) { return o.currency === 'USD'; }).reduce(function (s, o) { return s + Number(o.amount_usd); }, 0);
-    $('stRev').textContent = fmt(egp) + ' EGP' + (usd ? ' + $' + (Math.round(usd * 100) / 100) : '');
+    $('stRev').textContent = fmt(egp) + ' EGP' + (usd ? ' + $' + usd.toFixed(2).replace(/\.00$/, '') : '');
     var counts = { pending: pending.length, print: orders.filter(function (o) { return o.format === 'print'; }).length, paid: paid.length,
       rejected: orders.filter(function (o) { return o.status === 'rejected'; }).length, all: orders.length };
     document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.f === filter); b.querySelector('.c').textContent = '(' + counts[b.dataset.f] + ')'; });

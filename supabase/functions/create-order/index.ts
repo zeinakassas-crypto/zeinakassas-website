@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   if (priceErr || !quote || quote.error) return json({ error: "Product not available" }, 400);
   if (quote.code_error) return json({ error: "discount", code_error: quote.code_error, fields: ["discount_code"] }, 400);
   const price: number = quote.total;                 // in the order's currency
-  const money = (n: number, ar = false) => usd ? `$${n}` : `${n} ${ar ? "جنيه" : "EGP"}`;
+  const money = (n: number, ar = false) => usd ? `$${Number(n).toFixed(2).replace(/\.00$/, "")}` : `${n} ${ar ? "جنيه" : "EGP"}`;
 
   // A receipt is required unless a 100% code makes the order free.
   const hasReceipt = receipt instanceof File && receipt.size > 0;

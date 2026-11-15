@@ -129,7 +129,7 @@
       badge + '<h1>' + title + '</h1><p>' + p + '</p>' +
       (rej && data.reject_reason ? '<div class="notice err" style="margin-bottom:20px">' + t('reason') + ': ' + esc(data.reject_reason) + '</div>' : '') +
       '<div class="kv"><span>' + t('format') + '</span><b>' + t(isPrint ? 'print' : 'pdf') + '</b></div>' +
-      '<div class="kv"><span>' + t('amount') + '</span><b>' + (data.currency === 'USD' ? '$' + data.amount : fmt(data.amount) + ' ' + t('egp')) + '</b></div>' +
+      '<div class="kv"><span>' + t('amount') + '</span><b>' + (data.currency === 'USD' ? '$' + Number(data.amount).toFixed(2).replace(/\.00$/, '') : fmt(data.amount) + ' ' + t('egp')) + '</b></div>' +
       (isPrint && data.print_fee != null ? '<div class="kv"><span>' + t('print_fee') + '</span><b>' + fmt(data.print_fee) + ' ' + t('egp') + '</b></div>' : '') +
       '<ul class="timeline">' + steps + '</ul>' +
       (paid ? '<button class="btn btn-primary dl" id="dlBtn">' + t('download') + '</button>'
