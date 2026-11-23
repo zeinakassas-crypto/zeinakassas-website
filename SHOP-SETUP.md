@@ -109,6 +109,14 @@ maximum number of uses and a last day → **Create code**. Use **Pause** / **Act
 - The database (`supabase/migrations/20261112120000_discount_codes.sql`) checks every code again when the order is placed,
   so nobody can invent a discount from their browser.
 
+## Gift copies (free)
+**admin.html → 🎁 Send a gift**: type their name and email, pick English or Arabic, add a note if you like → **Send gift**.
+- They get a "A gift for you 🎁" email with the PDF attached, your note, and a link to their own private download page.
+- Nothing to pay and no receipt. Gifts are listed under the **Gifts** tab (not counted in paid orders or revenue);
+  **↻ Resend PDF email** sends the gift email again.
+- Database: `supabase/migrations/20261123000000_gifts.sql`. After pulling this change, run that file in the SQL Editor and
+  redeploy the admin function: `npx supabase functions deploy admin-action --no-verify-jwt`.
+
 ## Changing the price or offer later
 Supabase → Table Editor → `products` → edit `price_egp`, `offer_egp`, `offer_starts`, `offer_ends`.
 Also update the same numbers in `assets/shop/shop-config.js` and in the small script at the end of `index.html` / `ar.html`.

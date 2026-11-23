@@ -6,6 +6,8 @@
 //   print_fee      – save printing + shipping fee for a printed order (status → quote_sent)
 //   print_status   – set print_status to fee_paid | shipped
 //   receipt_url    – signed link to view the uploaded receipt
+//   gift           – { name, email, lang, message? } create a free, already-paid PDF order
+//                    and email the book to that person as a gift from Coach Bigzee
 import {
   adminClient, bytesToBase64, button, cors, emailLayout, esc, json, orderLink, sendEmail,
 } from "../_shared/common.ts";
@@ -27,9 +29,28 @@ Deno.serve(async (req) => {
   const { data: admin } = await db.from("shop_admins").select("email").ilike("email", callerEmail).maybeSingle();
   if (!admin) return json({ error: "Not an admin" }, 403);
 
-  let body: { action?: string; id?: string; reason?: string; fee?: number; print_status?: string };
+  let body: {
+    action?: string; id?: string; reason?: string; fee?: number; print_status?: string;
+    name?: string; email?: string; lang?: string; message?: string;
+  };
   try { body = await req.json(); } catch { return json({ error: "Invalid request" }, 400); }
-  const { action, id } = body;
+  let { action, id } = body;
+
+  // A gift has no order yet: create one (already paid, free, no receipt), then email it below.
+  if (action === "gift") {
+    const name = String(body.name ?? "").trim().slice(0, 120);
+    const email = String(body.email ?? "").trim().toLowerCase().slice(0, 200);
+    const message = String(body.message ?? "").trim().slice(0, 1000);
+    if (!name) return json({ error: "Enter the person's name" }, 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid email address" }, 400);
+    const { data: created, error } = await db.from("orders").insert({
+      product_id: "eat-well", format: "pdf", amount_egp: 0, currency: "EGP", payment_method: "gift",
+      customer_name: name, email, lang: body.lang === "ar" ? "ar" : "en", gift_message: message || null,
+      status: "paid", confirmed_at: new Date().toISOString(), admin_notes: `Gift sent by ${callerEmail}`,
+    }).select("id").single();
+    if (error || !created) return json({ error: error?.message ?? "Could not create the gift" }, 500);
+    id = created.id;
+  }
   if (!id) return json({ error: "Missing order id" }, 400);
 
   const { data: o } = await db.from("orders").select("*, products(name, pdf_path)").eq("id", id).maybeSingle();
@@ -45,6 +66,7 @@ Deno.serve(async (req) => {
       if (error || !file) throw new Error("PDF file missing in storage bucket 'products'");
       attachments = [{ filename: "ZK-Eat-Well-Vol-1.pdf", content: bytesToBase64(new Uint8Array(await file.arrayBuffer())) }];
     }
+    if (o.payment_method === "gift") return sendGiftEmail(attachments);
     const printLine = o.format === "print"
       ? (ar ? `<p>بخصوص النسخة المطبوعة: هنتواصل معاك على واتساب (${esc(o.whatsapp)}) بتكلفة الطباعة والشحن لعنوانك.</p>`
             : `<p>About your printed copy: we'll message you on WhatsApp (${esc(o.whatsapp)}) with the printing + shipping cost to your address.</p>`)
@@ -61,25 +83,42 @@ Deno.serve(async (req) => {
     await sendEmail(o.email, ar ? `تم تأكيد طلبك #${o.order_no} — Eat Well` : `Your Eat Well book is here — order #${o.order_no}`, html, attachments);
   }
 
+  async function sendGiftEmail(attachments: { filename: string; content: string }[]) {
+    const note = o.gift_message
+      ? `<blockquote style="margin:18px 0;padding:14px 18px;background:#fff;border-${ar ? "right" : "left"}:3px solid #FF4E1E;white-space:pre-line">${esc(o.gift_message)}</blockquote>`
+      : "";
+    const html = ar
+      ? emailLayout(`<h2 style="margin:0 0 12px">هدية ليك 🎁</h2>
+        <p>أهلاً ${esc(o.customer_name)}، كوتش بيجزي بعتتلك نسخة هدية من <b>Eat Well Vol. 1 — كتيب الـ 4 أسابيع</b>.</p>
+        ${note}<p>الملف مرفق في الإيميل ده، وتقدر كمان تنزله في أي وقت من الصفحة الخاصة بيك:</p>${button(link, "تحميل الـ PDF")}
+        <p>بالهنا والشفا، كُل صح. 🧡<br>كوتش بيجزي</p>`, true)
+      : emailLayout(`<h2 style="margin:0 0 12px">A gift for you 🎁</h2>
+        <p>Hi ${esc(o.customer_name)}, Coach Bigzee has sent you a free copy of <b>Eat Well Vol. 1 — The 4-Week Recipe Book</b>.</p>
+        ${note}<p>Your copy is attached to this email. You can also download it any time from your personal page:</p>${button(link, "Download your PDF")}
+        <p>Move right, eat well. 🧡<br>Coach Bigzee</p>`);
+    await sendEmail(o.email, ar ? "هدية ليك من كوتش بيجزي 🎁 — Eat Well" : "A gift for you from Coach Bigzee 🎁 — Eat Well", html, attachments);
+  }
+
   switch (action) {
     case "confirm":
-    case "resend": {
+    case "resend":
+    case "gift": {
       if (action === "confirm") {
         const { error } = await db.from("orders")
           .update({ status: "paid", confirmed_at: new Date().toISOString(), reject_reason: null }).eq("id", id);
         if (error) return json({ error: error.message }, 500);
-      } else if (o.status !== "paid") {
+      } else if (action === "resend" && o.status !== "paid") {
         return json({ error: "Order is not confirmed yet" }, 400);
       }
       try {
         await sendPdfEmail();
         await db.from("orders").update({ email_sent_at: new Date().toISOString(), email_error: null }).eq("id", id);
-        return json({ ok: true, emailed: true });
+        return json({ ok: true, emailed: true, id: o.id, order_no: o.order_no });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         await db.from("orders").update({ email_error: msg.slice(0, 500) }).eq("id", id);
         // Payment is still confirmed: the customer can download from their order page.
-        return json({ ok: true, emailed: false, email_error: msg });
+        return json({ ok: true, emailed: false, email_error: msg, id: o.id, order_no: o.order_no });
       }
     }
 
