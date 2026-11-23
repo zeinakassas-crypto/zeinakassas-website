@@ -59,7 +59,14 @@
   .crow .muted{color:var(--taupe);font-size:12px;}
   .crow .cacts{display:flex;gap:6px;}
   .st-on{color:var(--ok);} .st-off{color:var(--taupe);} .st-bad{color:var(--err);}
+  .gift-form{display:grid;grid-template-columns:1fr 1.2fr .7fr;gap:10px;}
+  .gift-form .field{margin:0;}
+  .gift-form .full{grid-column:1/-1;}
+  .gift-form textarea{width:100%;min-height:84px;resize:vertical;}
+  .gift-form .btn{justify-self:start;}
+  .b-gift{background:rgba(255,78,30,.16);color:#FF8A66;}
   .empty{color:var(--taupe);padding:40px;text-align:center;border:1px dashed var(--hair2);}
+  @media(max-width:760px){.gift-form{grid-template-columns:1fr;}}
   @media(max-width:980px){.code-form{grid-template-columns:1fr 1fr;}.code-form .btn{grid-column:1/-1;}.crow{grid-template-columns:1fr 1fr;}}
   @media(max-width:760px){.order{grid-template-columns:1fr;}.acts{min-width:0;}.stats{grid-template-columns:1fr 1fr;}}
 </style>
@@ -86,10 +93,22 @@
     <div class="top">
       <h1>Eat Well orders</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" id="giftBtn">🎁 Send a gift</button>
         <button class="btn btn-ghost btn-sm" id="codesBtn">🏷 Discount codes</button>
         <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
       </div>
     </div>
+    <section class="codes" id="giftPanel" hidden>
+      <h2>Send a free copy as a gift</h2>
+      <p class="lead">The PDF is emailed to them straight away, with your note, plus their own private download page. Nothing to pay and no receipt. The gift shows up under the Gifts tab, where you can resend it.</p>
+      <form class="gift-form" id="giftForm">
+        <div class="field"><label for="gName">Their name</label><input id="gName" required maxlength="120" autocomplete="off"></div>
+        <div class="field"><label for="gEmail">Their email</label><input id="gEmail" type="email" required maxlength="200" autocomplete="off"></div>
+        <div class="field"><label for="gLang">Email language</label><select id="gLang"><option value="en">English</option><option value="ar">Arabic</option></select></div>
+        <div class="field full"><label for="gMsg">Your note <span class="opt">(optional, shown in the email)</span></label><textarea id="gMsg" maxlength="1000" placeholder="e.g. Happy birthday! Enjoy cooking these 🧡"></textarea></div>
+        <button class="btn btn-primary" type="submit" id="giftSubmit">🎁 Send gift</button>
+      </form>
+    </section>
     <section class="codes" id="codesPanel" hidden>
       <h2>Discount codes</h2>
       <p class="lead">Customers type the code at checkout and press Apply. It comes off the book price (and the launch offer price while it's on); printing + shipping is never discounted. A rejected order gives its use back.</p>
@@ -114,6 +133,7 @@
       <button class="tab active" data-f="pending">Need review<span class="c"></span></button>
       <button class="tab" data-f="print">Printed copies<span class="c"></span></button>
       <button class="tab" data-f="paid">Paid<span class="c"></span></button>
+      <button class="tab" data-f="gift">Gifts<span class="c"></span></button>
       <button class="tab" data-f="rejected">Rejected<span class="c"></span></button>
       <button class="tab" data-f="all">All<span class="c"></span></button>
     </div>
@@ -177,10 +197,12 @@
   setInterval(function () { if (!$('app').hidden && document.visibilityState === 'visible') load(); }, 60000);
 
   function amountOf(o) { return o.currency === 'USD' ? '$' + Number(o.amount_usd).toFixed(2).replace(/\.00$/, '') : fmt(o.amount_egp) + ' EGP'; }
+  function isGift(o) { return o.payment_method === 'gift'; }
   function needsPrint(o) { return o.format === 'print' && o.status === 'paid' && o.print_status !== 'shipped'; }
   function matches(o) {
     if (filter === 'pending' && o.status !== 'pending') return false;
-    if (filter === 'paid' && o.status !== 'paid') return false;
+    if (filter === 'paid' && (o.status !== 'paid' || isGift(o))) return false;
+    if (filter === 'gift' && !isGift(o)) return false;
     if (filter === 'rejected' && o.status !== 'rejected') return false;
     if (filter === 'print' && o.format !== 'print') return false;
     if (!query) return true;
@@ -189,14 +211,15 @@
 
   function render() {
     var pending = orders.filter(function (o) { return o.status === 'pending'; });
-    var paid = orders.filter(function (o) { return o.status === 'paid'; });
+    var paid = orders.filter(function (o) { return o.status === 'paid' && !isGift(o); });
+    var gifts = orders.filter(isGift);
     $('stPending').textContent = pending.length;
     $('stPrint').textContent = orders.filter(needsPrint).length;
     $('stPaid').textContent = paid.length;
     var egp = paid.filter(function (o) { return o.currency !== 'USD'; }).reduce(function (s, o) { return s + o.amount_egp; }, 0);
     var usd = paid.filter(function (o) { return o.currency === 'USD'; }).reduce(function (s, o) { return s + Number(o.amount_usd); }, 0);
     $('stRev').textContent = fmt(egp) + ' EGP' + (usd ? ' + $' + usd.toFixed(2).replace(/\.00$/, '') : '');
-    var counts = { pending: pending.length, print: orders.filter(function (o) { return o.format === 'print'; }).length, paid: paid.length,
+    var counts = { pending: pending.length, print: orders.filter(function (o) { return o.format === 'print'; }).length, paid: paid.length, gift: gifts.length,
       rejected: orders.filter(function (o) { return o.status === 'rejected'; }).length, all: orders.length };
     document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.f === filter); b.querySelector('.c').textContent = '(' + counts[b.dataset.f] + ')'; });
 
@@ -210,7 +233,7 @@
     var mail = o.email_sent_at ? '<div class="mail-st ok">✉ PDF emailed ' + new Date(o.email_sent_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) + '</div>'
       : (o.email_error ? '<div class="mail-st err">✉ Email failed: ' + esc(o.email_error.slice(0, 140)) + '</div>' : '');
     var acts = o.receipt_path ? '<button class="btn btn-ghost" data-a="receipt" data-id="' + o.id + '">🧾 View receipt</button>'
-      : '<div class="meta" style="text-align:center">No receipt (free with code)</div>';
+      : '<div class="meta" style="text-align:center">' + (isGift(o) ? '🎁 Gift, free' : 'No receipt (free with code)') + '</div>';
     if (o.status === 'pending') {
       acts += '<button class="btn btn-ok" data-a="confirm" data-id="' + o.id + '">✓ Payment confirmed — send PDF</button>' +
               '<button class="btn btn-danger" data-a="reject" data-id="' + o.id + '">✕ Reject</button>';
@@ -234,12 +257,14 @@
 
     return '<div class="order ' + o.status + '"><div>' +
       '<h3>#' + o.order_no + ' · ' + esc(o.customer_name) + ' <span class="badge b-' + o.status + '">' + o.status + '</span>' +
+      (isGift(o) ? ' <span class="badge b-gift">gift</span>' : '') +
       (o.format === 'print' ? ' <span class="badge b-print">print</span>' : ' <span class="badge" style="background:rgba(244,245,242,.08)">pdf</span>') + '</h3>' +
-      '<div class="meta">' + when + ' · <b>' + amountOf(o) + '</b>' + (o.currency === 'USD' ? ' via PayPal' : '') +
+      '<div class="meta">' + when + ' · <b>' + (isGift(o) ? 'Gift' : amountOf(o)) + '</b>' + (o.currency === 'USD' ? ' via PayPal' : '') +
       (o.discount_code ? ' · 🏷 ' + esc(o.discount_code) + ' (−' + fmt(o.discount_egp) + ')' : '') + ' · ' + (o.lang === 'ar' ? 'Arabic' : 'English') + '<br>' +
       '✉ <a href="mailto:' + esc(o.email) + '">' + esc(o.email) + '</a>' + (o.whatsapp ? ' · 📱 ' + esc(o.whatsapp) : '') +
       (o.payment_ref ? '<br>InstaPay ref: <b>' + esc(o.payment_ref) + '</b>' : '') +
       (o.notes ? '<br>Notes: ' + esc(o.notes) : '') +
+      (o.gift_message ? '<br>Your note: ' + esc(o.gift_message) : '') +
       (o.reject_reason ? '<br>Reject reason: ' + esc(o.reject_reason) : '') +
       (o.status === 'paid' ? '<br>Downloads: ' + o.download_count : '') + '</div>' + mail + printBox +
       '</div><div class="acts">' + acts + '</div></div>';
@@ -299,6 +324,31 @@
     loadCodes();
   });
 
+  /* ---------- gifts ---------- */
+  $('giftBtn').onclick = function () { $('giftPanel').hidden = !$('giftPanel').hidden; if (!$('giftPanel').hidden) $('gName').focus(); };
+  $('giftForm').onsubmit = async function (e) {
+    e.preventDefault();
+    var name = $('gName').value.trim(), email = $('gEmail').value.trim();
+    if (!name || !email) return;
+    var dup = orders.find(function (o) { return isGift(o) && o.email.toLowerCase() === email.toLowerCase(); });
+    if (!confirm((dup ? 'You already sent a gift to ' + email + ' (#' + dup.order_no + '). Send another one?\n\n' : '') +
+                 'Send a free copy of Eat Well to ' + name + ' (' + email + ')?')) return;
+    var b = $('giftSubmit'), label = b.innerHTML;
+    b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+    try {
+      var res = await act({ action: 'gift', name: name, email: email, lang: $('gLang').value, message: $('gMsg').value.trim() });
+      toast(res.emailed ? '🎁 Gift sent to ' + email
+        : 'Gift #' + res.order_no + ' saved, but the email failed: ' + res.email_error + ' (use ↻ Resend under Gifts)');
+      $('giftForm').reset();
+      filter = 'gift';
+      await load();
+    } catch (err) {
+      toast('Error: ' + err.message);
+    } finally {
+      b.disabled = false; b.innerHTML = label;
+    }
+  };
+
   /* ---------- actions ---------- */
   async function act(body) {
     var r = await sb.functions.invoke('admin-action', { body: body });
@@ -321,7 +371,7 @@
         $('modalImg').src = r.url; $('modalOpen').href = r.url; $('modal').classList.add('open'); return;
       }
       if (a === 'confirm' && !confirm('Confirm payment of ' + amountOf(o) + (o.currency === 'USD' ? ' (PayPal)' : '') + ' from ' + o.customer_name + '?\n\nThe PDF will be emailed to ' + o.email + ' automatically.')) return;
-      if (a === 'resend' && !confirm('Send the PDF email again to ' + o.email + '?')) return;
+      if (a === 'resend' && !confirm('Send the ' + (isGift(o) ? 'gift' : 'PDF') + ' email again to ' + o.email + '?')) return;
       var reason;
       if (a === 'reject') { reason = prompt('Reason (sent to the customer, optional):', 'Payment not found / amount does not match'); if (reason === null) return; }
 

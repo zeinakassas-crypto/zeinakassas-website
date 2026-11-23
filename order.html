@@ -63,6 +63,8 @@
       pending_p: "We're checking your receipt now. As soon as your payment is confirmed you'll get an email with your PDF, and the download button below will unlock. This page updates by itself.",
       paid_title: 'Payment confirmed 🎉', paid_p: 'Your book is ready. Download it below — it was also sent to your email.',
       paid_print_p: "Your payment is confirmed. Download your PDF below. We'll message you on WhatsApp about your printed copy.",
+      gift_title: 'A gift for you 🎁', gift_p: 'Coach Bigzee sent you a free copy of the book. Download it below — it was also sent to your email.',
+      g1: 'Gift sent by Coach Bigzee', gift: 'Gift',
       rejected_title: "We couldn't confirm your payment",
       rejected_p: 'Please reply to our email or message @coachbigzee on Instagram with your receipt and we will sort it out.',
       reason: 'Reason', order: 'Order', amount: 'Paid', format: 'Format', pdf: 'Digital PDF', print: 'Printed copy + PDF',
@@ -80,6 +82,8 @@
       pending_p: 'بنراجع الإيصال دلوقتي. أول ما الدفع يتأكد هيوصلك إيميل فيه الـ PDF، وزرار التحميل تحت هيتفتح. الصفحة دي بتتحدّث لوحدها.',
       paid_title: 'تم تأكيد الدفع 🎉', paid_p: 'الكتيب جاهز. نزّله من تحت — واتبعت كمان على إيميلك.',
       paid_print_p: 'الدفع اتأكد. نزّل الـ PDF من تحت، وهنكلمك على واتساب بخصوص النسخة المطبوعة.',
+      gift_title: 'هدية ليك 🎁', gift_p: 'كوتش بيجزي بعتتلك نسخة هدية من الكتيب. نزّلها من تحت — واتبعتت كمان على إيميلك.',
+      g1: 'كوتش بيجزي بعتتلك الهدية', gift: 'هدية',
       rejected_title: 'ماقدرناش نأكد الدفع',
       rejected_p: 'من فضلك رد على الإيميل أو ابعتلنا على إنستجرام @coachbigzee ومعاك الإيصال وهنحلها.',
       reason: 'السبب', order: 'الطلب', amount: 'المدفوع', format: 'النوع', pdf: 'ملف PDF', print: 'نسخة مطبوعة + PDF',
@@ -113,10 +117,12 @@
     if (!data) return;
     if (data.error === 'not_found') { box.innerHTML = '<div class="center">' + t('not_found') + '</div>'; return; }
     var paid = data.status === 'paid', rej = data.status === 'rejected', isPrint = data.format === 'print';
-    var badge = '<span class="badge b-' + data.status + '">' + data.status + '</span>' + (isPrint ? ' <span class="badge b-print">print</span>' : '');
-    var title = paid ? t('paid_title') : rej ? t('rejected_title') : (isNew ? t('title_new') : t('title'));
-    var p = paid ? t(isPrint ? 'paid_print_p' : 'paid_p') : rej ? t('rejected_p') : t('pending_p');
-    var steps = step(t('s1'), 'done') + step(t('s2'), paid ? 'done' : rej ? '' : 'now') + step(t('s3'), paid ? 'done' : '');
+    var badge = (data.payment_method === 'gift' ? '<span class="badge b-paid">' + t('gift') + '</span>' : '<span class="badge b-' + data.status + '">' + data.status + '</span>') + (isPrint ? ' <span class="badge b-print">print</span>' : '');
+    var gift = data.payment_method === 'gift';
+    var title = gift ? t('gift_title') : paid ? t('paid_title') : rej ? t('rejected_title') : (isNew ? t('title_new') : t('title'));
+    var p = gift ? t('gift_p') : paid ? t(isPrint ? 'paid_print_p' : 'paid_p') : rej ? t('rejected_p') : t('pending_p');
+    var steps = gift ? step(t('g1'), 'done') + step(t('s3'), 'done')
+      : step(t('s1'), 'done') + step(t('s2'), paid ? 'done' : rej ? '' : 'now') + step(t('s3'), paid ? 'done' : '');
     if (isPrint) {
       var ps = ['awaiting_quote', 'quote_sent', 'fee_paid', 'shipped'].indexOf(data.print_status);
       steps += step(t('p1') + (data.print_fee != null ? ' — ' + fmt(data.print_fee) + ' ' + t('egp') : ''), ps >= 1 ? 'done' : (paid ? 'now' : ''));
@@ -129,7 +135,7 @@
       badge + '<h1>' + title + '</h1><p>' + p + '</p>' +
       (rej && data.reject_reason ? '<div class="notice err" style="margin-bottom:20px">' + t('reason') + ': ' + esc(data.reject_reason) + '</div>' : '') +
       '<div class="kv"><span>' + t('format') + '</span><b>' + t(isPrint ? 'print' : 'pdf') + '</b></div>' +
-      '<div class="kv"><span>' + t('amount') + '</span><b>' + (data.currency === 'USD' ? '$' + Number(data.amount).toFixed(2).replace(/\.00$/, '') : fmt(data.amount) + ' ' + t('egp')) + '</b></div>' +
+      (gift ? '' : '<div class="kv"><span>' + t('amount') + '</span><b>' + (data.currency === 'USD' ? '$' + Number(data.amount).toFixed(2).replace(/\.00$/, '') : fmt(data.amount) + ' ' + t('egp')) + '</b></div>') +
       (isPrint && data.print_fee != null ? '<div class="kv"><span>' + t('print_fee') + '</span><b>' + fmt(data.print_fee) + ' ' + t('egp') + '</b></div>' : '') +
       '<ul class="timeline">' + steps + '</ul>' +
       (paid ? '<button class="btn btn-primary dl" id="dlBtn">' + t('download') + '</button>'
