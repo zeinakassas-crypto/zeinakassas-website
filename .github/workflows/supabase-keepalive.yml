@@ -1,0 +1,28 @@
+# Keeps the zk-shop Supabase project from being paused for inactivity
+# (the free plan pauses projects after ~7 days with no requests).
+# Runs every 3 days and makes one small database query through the public API.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping zk-shop database
+        env:
+          # Public publishable key, same one already in assets/shop/shop-config.js
+          SUPABASE_URL: https://ejhecenengkfqidhzdhh.supabase.co
+          SUPABASE_KEY: sb_publishable_-4iXE50xqHNdDDvfLZTlAQ_eGu8EQZG
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/orders?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY")
+          echo "Supabase responded with HTTP $status"
+          if [ "$status" -ge 500 ] || [ "$status" = "000" ]; then
+            echo "::error::zk-shop Supabase did not respond. It may be paused; restore it at https://supabase.com/dashboard/project/ejhecenengkfqidhzdhh"
+            exit 1
+          fi
